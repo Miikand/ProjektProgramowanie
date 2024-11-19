@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GRA_RPG")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+804ddd1d3a6b5bef67f7bb7cb641b44f0a7a7ed0")]
 [assembly: System.Reflection.AssemblyProductAttribute("GRA_RPG")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GRA_RPG")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
