@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\student\\Documents\\5a\\Aleksandra Rybarczyk\\ProjektProgramowanie\\GRA_RPG\\GRA_RPG\\GRA_RPG.csproj",
+      "projectUniqueName": "C:\\Users\\student\\Documents\\5a\\Mikolaj Andrzejewski\\ProjektProgramowanie\\GRA_RPG\\GRA_RPG\\GRA_RPG.csproj",
       "projectName": "GRA_RPG",
-      "projectPath": "C:\\Users\\student\\Documents\\5a\\Aleksandra Rybarczyk\\ProjektProgramowanie\\GRA_RPG\\GRA_RPG\\GRA_RPG.csproj",
+      "projectPath": "C:\\Users\\student\\Documents\\5a\\Mikolaj Andrzejewski\\ProjektProgramowanie\\GRA_RPG\\GRA_RPG\\GRA_RPG.csproj",
       "packagesPath": "C:\\Users\\student\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\student\\Documents\\5a\\Aleksandra Rybarczyk\\ProjektProgramowanie\\GRA_RPG\\GRA_RPG\\obj\\",
+      "outputPath": "C:\\Users\\student\\Documents\\5a\\Mikolaj Andrzejewski\\ProjektProgramowanie\\GRA_RPG\\GRA_RPG\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -46,6 +46,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -67,7 +72,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.111/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

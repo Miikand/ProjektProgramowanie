@@ -5,7 +5,16 @@
         static void Main(string[] args)
         {
             //Console.WriteLine("Hello, World!");
-        }
+            Menu menu = new Menu(); bool exit = false; while (!exit)
+            {
+                menu.ShowMainMenu(); string choice = Console.ReadLine(); switch (choice)
+                {
+                    case "1": menu.ShowClasses(); break; 
+                    case "2": break; 
+                    case "3":  break; 
+                    case "4": exit = true; break;
+                    default: Console.WriteLine("Nieprawidłowa opcja. Spróbuj ponownie."); break; } } 
+                }
 
         class Character
         {
@@ -47,7 +56,33 @@
             }
 
         }
+    class Menu
+
+        {
+            public void ShowMainMenu()
+            {
+                Console.WriteLine("=== Główne Menu ===");
+                Console.WriteLine("1. Stwórz nową postać");
+                Console.WriteLine("2. Pokaż wszystkie postacie");
+                Console.WriteLine("3. Rozpocznij bitwę");
+                Console.WriteLine("4. Wyjdź z gry");
+                Console.Write("Wybierz opcję: ");
+            }
+
+            public void ShowClasses()
+            {
+                Console.WriteLine("=== Klasy Postaci ===");
+                Console.WriteLine("1. Mag - wysoki atak, niskie HP");
+                Console.WriteLine("2. Łucznik - średni atak, średnie HP");
+                Console.WriteLine("3. Wojownik - niski atak, wysokie HP");
+                Console.Write("Wybierz klasę postaci: ");
+            }
+
+
+        }
 
     }
+
 }
+
 
