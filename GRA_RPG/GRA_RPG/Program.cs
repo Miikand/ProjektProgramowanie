@@ -1,20 +1,61 @@
-﻿namespace GRA_RPG
+﻿using System.Collections.Generic;
+using System;
+using GRA_RPG;
+using System.Xml.Linq;
+
+namespace GRA_RPG
 {
-    internal class Program
+    using System;
+    using System.Collections.Generic;
+
+    namespace GRA_RPG
     {
-        static void Main(string[] args)
+        internal class Program
         {
-            //Console.WriteLine("Hello, World!");
-            Menu menu = new Menu(); bool exit = false; while (!exit)
+            static void Main(string[] args)
             {
-                menu.ShowMainMenu(); string choice = Console.ReadLine(); switch (choice)
+                Menu menu = new Menu();
+                bool exit = false;
+
+                while (!exit)
                 {
-                    case "1": menu.ShowClasses(); break; 
-                    case "2": break; 
-                    case "3":  break; 
-                    case "4": exit = true; break;
-                    default: Console.WriteLine("Nieprawidłowa opcja. Spróbuj ponownie."); break; } } 
+                    menu.ShowMainMenu();
+                    string choice = Console.ReadLine();
+
+                    switch (choice)
+                    {
+                        case "1":
+                            menu.ShowClasses();
+                            break;
+                        case "2":
+                            break;
+                        case "3":
+                            break;
+                        case "4":
+                            exit = true;
+                            break;
+                        case "5":
+                            Game g = new Game();
+                            g.Run();
+                            break;
+                        default:
+                            Console.WriteLine("Nieprawidłowa opcja. Spróbuj ponownie.");
+                            break;
+                    }
                 }
+            }
+        }
+
+        class Game
+        {
+            public void Run()
+            {
+                Character main_character = new Character("john", "mag");
+                main_character.AddItem(new Item("Magic Wand", "A powerful wand", 50));
+                main_character.AddItem(new Item("Health Potion", "Restores 50 HP", 50));
+                main_character.DisplayInventory();
+            }
+        }
 
         class Character
         {
@@ -25,6 +66,7 @@
             public int HP { get; private set; }
             public int MaxHP { get; private set; }
             public int AttackPower { get; private set; }
+            public List<Item> Inventory { get; private set; }
 
             public Character(string name, string charClass)
             {
@@ -32,6 +74,7 @@
                 Class = charClass;
                 Level = 1;
                 Experience = 0;
+                Inventory = new List<Item>();
 
                 // początkowe wartosci postaci w zależności od klasy
                 switch (Class.ToLower())
@@ -55,9 +98,23 @@
                 HP = MaxHP;
             }
 
-        }
-    class Menu
+            public void AddItem(Item item)
+            {
+                Inventory.Add(item);
+                Console.WriteLine($"{item.Name} dodano do ekwipunku.");
+            }
 
+            public void DisplayInventory()
+            {
+                Console.WriteLine("=== Ekwipunek ===");
+                foreach (var item in Inventory)
+                {
+                    Console.WriteLine($"{item.Name} - {item.Description} (Moc: {item.Power})");
+                }
+            }
+        }
+
+        class Menu
         {
             public void ShowMainMenu()
             {
@@ -77,12 +134,23 @@
                 Console.WriteLine("3. Wojownik - niski atak, wysokie HP");
                 Console.Write("Wybierz klasę postaci: ");
             }
-
-
         }
 
-    }
+        class Item
+        {
+            public string Name { get; set; }
+            public string Description { get; set; }
+            public int Power { get; set; }
 
+            public Item(string name, string description, int power)
+            {
+                Name = name;
+                Description = description;
+                Power = power;
+            }
+        }
+    }
 }
+
 
 
