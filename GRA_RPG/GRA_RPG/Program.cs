@@ -15,6 +15,7 @@ namespace GRA_RPG
             static void Main(string[] args)
             {
                 Menu menu = new Menu();
+                List<Enemy> enemies = new List<Enemy>();
                 bool exit = false;
 
                 while (!exit)
@@ -149,6 +150,36 @@ namespace GRA_RPG
                 Power = power;
             }
         }
+        class Enemy
+        {
+            public string Name { get; set; }
+            public int Level { get; private set; }
+            public int HP { get; private set; }
+            public int MaxHP { get; private set; }
+            public int AttackPower { get; private set; }
+
+            public Enemy(string name, int level, int maxHP, int attackPower)
+            {
+                Name = name;
+                Level = level;
+                MaxHP = maxHP;
+                HP = maxHP;
+                AttackPower = attackPower;
+            }
+
+            public void TakeDamage(int damage)
+            {
+                HP -= damage;
+                if (HP < 0) HP = 0;
+                Console.WriteLine($"{Name} otrzymał {damage} obrażeń. Pozostało HP: {HP}/{MaxHP}.");
+            }
+
+            public bool IsDefeated()
+            {
+                return HP <= 0;
+            }
+        }
+
     }
 }
 
