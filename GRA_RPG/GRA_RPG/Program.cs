@@ -85,8 +85,20 @@ namespace GRA_RPG
                         }
                         break;
 
+                    case "2":
+                        Console.WriteLine("Uciekasz z walki!");
+                        return;
+
+                    default:
+                        Console.WriteLine("Nieprawidłowa opcja. Spróbuj ponownie.");
+                        break;
                 }
             }
+
+            if (player.HP <= 0)
+                Console.WriteLine("Zostałeś pokonany!");
+            else if (enemy.IsDefeated())
+                Console.WriteLine($"Pokonałeś przeciwnika: {enemy.Name}!");
         }
     }
 
