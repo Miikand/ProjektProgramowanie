@@ -25,7 +25,6 @@ namespace GRA_RPG
                         Console.WriteLine("Pokaż wszystkie postacie - funkcjonalność do zaimplementowania.");
                         break;
                     case "3":
-                        // Przykładowe rozpoczęcie bitwy
                         Character player = new Character("Gracz", "mag");
                         Enemy enemy = new Enemy("Goblin", 1, 50, 10);
                         Game game = new Game();
@@ -47,7 +46,6 @@ namespace GRA_RPG
         }
     }
 
-    // Bazowa klasa Entity
     abstract class Entity
     {
         public string Name { get; set; }
@@ -55,6 +53,7 @@ namespace GRA_RPG
         public int HP { get; protected set; }
         public int MaxHP { get; protected set; }
         public int AttackPower { get; protected set; }
+        public List<Item> Inventory { get; private set; }
 
         public Entity(string name, int level, int maxHP, int attackPower)
         {
@@ -63,34 +62,45 @@ namespace GRA_RPG
             MaxHP = maxHP;
             HP = maxHP;
             AttackPower = attackPower;
+            Inventory = new List<Item>();
         }
 
         public void TakeDamage(int damage)
         {
             HP -= damage;
             if (HP < 0) HP = 0;
-            Console.WriteLine($"{Name} otrzymał {damage} obrażeń. Pozostało HP: {HP}/{MaxHP}.");
         }
 
         public bool IsDefeated()
         {
             return HP <= 0;
         }
+
+        public void AddItem(Item item)
+        {
+            Inventory.Add(item);
+        }
+
+        public void DisplayInventory()
+        {
+            Console.WriteLine($"\n=== Ekwipunek {Name} ===");
+            foreach (var item in Inventory)
+            {
+                Console.WriteLine($"{item.Name} - {item.Description} (Moc: {item.Power})");
+            }
+        }
     }
 
-    // Klasa Character dziedziczy z Entity
     class Character : Entity
     {
         public string Class { get; set; }
         public int Experience { get; private set; }
-        public List<Item> Inventory { get; private set; }
 
-        public Character(string name, string charClass) 
-            : base(name, 1, 0, 0) // Przekazujemy początkowe wartości do Entity
+        public Character(string name, string charClass)
+            : base(name, 1, 0, 0)
         {
             Class = charClass;
             Experience = 0;
-            Inventory = new List<Item>();
 
             switch (Class.ToLower())
             {
@@ -112,27 +122,11 @@ namespace GRA_RPG
 
             HP = MaxHP;
         }
-
-        public void AddItem(Item item)
-        {
-            Inventory.Add(item);
-            Console.WriteLine($"{item.Name} dodano do ekwipunku.");
-        }
-
-        public void DisplayInventory()
-        {
-            Console.WriteLine("=== Ekwipunek ===");
-            foreach (var item in Inventory)
-            {
-                Console.WriteLine($"{item.Name} - {item.Description} (Moc: {item.Power})");
-            }
-        }
     }
 
-    // Klasa Enemy dziedziczy z Entity
     class Enemy : Entity
     {
-        public Enemy(string name, int level, int maxHP, int attackPower) 
+        public Enemy(string name, int level, int maxHP, int attackPower)
             : base(name, level, maxHP, attackPower) { }
     }
 
@@ -165,13 +159,19 @@ namespace GRA_RPG
             Character mainCharacter = new Character("John", "mag");
             mainCharacter.AddItem(new Item("Magic Wand", "A powerful wand", 50));
             mainCharacter.AddItem(new Item("Health Potion", "Restores 50 HP", 50));
+            Console.WriteLine("Ekwipunek gracza:");
             mainCharacter.DisplayInventory();
         }
 
         public void StartBattle(Character player, Enemy enemy)
         {
+            enemy.AddItem(new Item("Rusty Dagger", "A weak dagger", 10));
+            enemy.AddItem(new Item("Shield Fragment", "Part of a broken shield", 5));
+
             Console.WriteLine($"\n=== Rozpoczyna się bitwa! ===");
             Console.WriteLine($"Przeciwnik: {enemy.Name} (HP: {enemy.HP}/{enemy.MaxHP}, Atak: {enemy.AttackPower})");
+            Console.WriteLine("Ekwipunek przeciwnika:");
+            enemy.DisplayInventory();
 
             while (player.HP > 0 && !enemy.IsDefeated())
             {
