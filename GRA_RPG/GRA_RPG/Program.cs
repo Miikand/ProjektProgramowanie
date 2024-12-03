@@ -85,7 +85,7 @@ namespace GRA_RPG
         public int Experience { get; private set; }
         public List<Item> Inventory { get; private set; }
 
-        public Character(string name, string charClass)
+        public Character(string name, string charClass) 
             : base(name, 1, 0, 0) // Przekazujemy początkowe wartości do Entity
         {
             Class = charClass;
@@ -132,7 +132,7 @@ namespace GRA_RPG
     // Klasa Enemy dziedziczy z Entity
     class Enemy : Entity
     {
-        public Enemy(string name, int level, int maxHP, int attackPower)
+        public Enemy(string name, int level, int maxHP, int attackPower) 
             : base(name, level, maxHP, attackPower) { }
     }
 
