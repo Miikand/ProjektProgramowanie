@@ -47,6 +47,117 @@ namespace GRA_RPG
         }
     }
 
+    // Bazowa klasa Entity
+    abstract class Entity
+    {
+        public string Name { get; set; }
+        public int Level { get; protected set; }
+        public int HP { get; protected set; }
+        public int MaxHP { get; protected set; }
+        public int AttackPower { get; protected set; }
+
+        public Entity(string name, int level, int maxHP, int attackPower)
+        {
+            Name = name;
+            Level = level;
+            MaxHP = maxHP;
+            HP = maxHP;
+            AttackPower = attackPower;
+        }
+
+        public void TakeDamage(int damage)
+        {
+            HP -= damage;
+            if (HP < 0) HP = 0;
+            Console.WriteLine($"{Name} otrzymał {damage} obrażeń. Pozostało HP: {HP}/{MaxHP}.");
+        }
+
+        public bool IsDefeated()
+        {
+            return HP <= 0;
+        }
+    }
+
+    // Klasa Character dziedziczy z Entity
+    class Character : Entity
+    {
+        public string Class { get; set; }
+        public int Experience { get; private set; }
+        public List<Item> Inventory { get; private set; }
+
+        public Character(string name, string charClass) 
+            : base(name, 1, 0, 0) // Przekazujemy początkowe wartości do Entity
+        {
+            Class = charClass;
+            Experience = 0;
+            Inventory = new List<Item>();
+
+            switch (Class.ToLower())
+            {
+                case "mag":
+                    MaxHP = 80;
+                    AttackPower = 20;
+                    break;
+                case "łucznik":
+                    MaxHP = 100;
+                    AttackPower = 15;
+                    break;
+                case "wojownik":
+                    MaxHP = 120;
+                    AttackPower = 10;
+                    break;
+                default:
+                    throw new ArgumentException("Nieznana klasa postaci");
+            }
+
+            HP = MaxHP;
+        }
+
+        public void AddItem(Item item)
+        {
+            Inventory.Add(item);
+            Console.WriteLine($"{item.Name} dodano do ekwipunku.");
+        }
+
+        public void DisplayInventory()
+        {
+            Console.WriteLine("=== Ekwipunek ===");
+            foreach (var item in Inventory)
+            {
+                Console.WriteLine($"{item.Name} - {item.Description} (Moc: {item.Power})");
+            }
+        }
+    }
+
+    // Klasa Enemy dziedziczy z Entity
+    class Enemy : Entity
+    {
+        public Enemy(string name, int level, int maxHP, int attackPower) 
+            : base(name, level, maxHP, attackPower) { }
+    }
+
+    class Menu
+    {
+        public void ShowMainMenu()
+        {
+            Console.WriteLine("=== Główne Menu ===");
+            Console.WriteLine("1. Stwórz nową postać");
+            Console.WriteLine("2. Pokaż wszystkie postacie");
+            Console.WriteLine("3. Rozpocznij bitwę");
+            Console.WriteLine("4. Wyjdź z gry");
+            Console.Write("Wybierz opcję: ");
+        }
+
+        public void ShowClasses()
+        {
+            Console.WriteLine("=== Klasy Postaci ===");
+            Console.WriteLine("1. Mag - wysoki atak, niskie HP");
+            Console.WriteLine("2. Łucznik - średni atak, średnie HP");
+            Console.WriteLine("3. Wojownik - niski atak, wysokie HP");
+            Console.Write("Wybierz klasę postaci: ");
+        }
+    }
+
     class Game
     {
         public void Run()
@@ -102,90 +213,6 @@ namespace GRA_RPG
         }
     }
 
-    class Character
-    {
-        public string Name { get; set; }
-        public string Class { get; set; }
-        public int Level { get; private set; }
-        public int Experience { get; private set; }
-        public int HP { get; private set; }
-        public int MaxHP { get; private set; }
-        public int AttackPower { get; private set; }
-        public List<Item> Inventory { get; private set; }
-
-        public Character(string name, string charClass)
-        {
-            Name = name;
-            Class = charClass;
-            Level = 1;
-            Experience = 0;
-            Inventory = new List<Item>();
-
-            switch (Class.ToLower())
-            {
-                case "mag":
-                    MaxHP = 80;
-                    AttackPower = 20;
-                    break;
-                case "łucznik":
-                    MaxHP = 100;
-                    AttackPower = 15;
-                    break;
-                case "wojownik":
-                    MaxHP = 120;
-                    AttackPower = 10;
-                    break;
-                default:
-                    throw new ArgumentException("Nieznana klasa postaci");
-            }
-
-            HP = MaxHP;
-        }
-
-        public void TakeDamage(int damage)
-        {
-            HP -= damage;
-            if (HP < 0) HP = 0;
-        }
-
-        public void AddItem(Item item)
-        {
-            Inventory.Add(item);
-            Console.WriteLine($"{item.Name} dodano do ekwipunku.");
-        }
-
-        public void DisplayInventory()
-        {
-            Console.WriteLine("=== Ekwipunek ===");
-            foreach (var item in Inventory)
-            {
-                Console.WriteLine($"{item.Name} - {item.Description} (Moc: {item.Power})");
-            }
-        }
-    }
-
-    class Menu
-    {
-        public void ShowMainMenu()
-        {
-            Console.WriteLine("=== Główne Menu ===");
-            Console.WriteLine("1. Stwórz nową postać");
-            Console.WriteLine("2. Pokaż wszystkie postacie");
-            Console.WriteLine("3. Rozpocznij bitwę");
-            Console.WriteLine("4. Wyjdź z gry");
-            Console.Write("Wybierz opcję: ");
-        }
-
-        public void ShowClasses()
-        {
-            Console.WriteLine("=== Klasy Postaci ===");
-            Console.WriteLine("1. Mag - wysoki atak, niskie HP");
-            Console.WriteLine("2. Łucznik - średni atak, średnie HP");
-            Console.WriteLine("3. Wojownik - niski atak, wysokie HP");
-            Console.Write("Wybierz klasę postaci: ");
-        }
-    }
-
     class Item
     {
         public string Name { get; set; }
@@ -197,36 +224,6 @@ namespace GRA_RPG
             Name = name;
             Description = description;
             Power = power;
-        }
-    }
-
-    class Enemy
-    {
-        public string Name { get; set; }
-        public int Level { get; private set; }
-        public int HP { get; private set; }
-        public int MaxHP { get; private set; }
-        public int AttackPower { get; private set; }
-
-        public Enemy(string name, int level, int maxHP, int attackPower)
-        {
-            Name = name;
-            Level = level;
-            MaxHP = maxHP;
-            HP = maxHP;
-            AttackPower = attackPower;
-        }
-
-        public void TakeDamage(int damage)
-        {
-            HP -= damage;
-            if (HP < 0) HP = 0;
-            Console.WriteLine($"{Name} otrzymał {damage} obrażeń. Pozostało HP: {HP}/{MaxHP}.");
-        }
-
-        public bool IsDefeated()
-        {
-            return HP <= 0;
         }
     }
 }
