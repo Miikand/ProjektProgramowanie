@@ -160,12 +160,12 @@ namespace GRA_RPG
             Console.WriteLine("4. WyjdŸ z gry");
             Console.Write("Wybierz opcjê: ");
 =======
-            Console.WriteLine("=== GÅ‚Ã³wne Menu ===");
-            Console.WriteLine("1. StwÃ³rz nowÄ… postaÄ‡");
-            Console.WriteLine("2. PokaÅ¼ wszystkie postacie");
-            Console.WriteLine("3. Rozpocznij bitwÄ™");
-            Console.WriteLine("4. WyjdÅº z gry");
-            Console.Write("Wybierz opcjÄ™: ");
+            Console.WriteLine("=== G³ówne Menu ===");
+            Console.WriteLine("1. Stwórz now¹ postaæ");
+            Console.WriteLine("2. Poka¿ wszystkie postacie");
+            Console.WriteLine("3. Rozpocznij bitwê");
+            Console.WriteLine("4. WyjdŸ z gry");
+            Console.Write("Wybierz opcjê: ");
 >>>>>>> main
         }
 
@@ -178,7 +178,7 @@ namespace GRA_RPG
             Console.WriteLine("3. Wojownik - niski atak, wysokie HP");
             Console.Write("Wybierz klasê postaci: ");
 =======
-            Console.WriteLine("2. Åucznik - Å›redni atak, Å›rednie HP");
+            Console.WriteLine("2. £ucznik - œredni atak, Œ›rednie HP");
             Console.WriteLine("3. Wojownik - niski atak, wysokie HP");
             Console.Write("Wybierz klasÄ™ postaci: ");
 >>>>>>> main
@@ -204,7 +204,7 @@ namespace GRA_RPG
 <<<<<<< HEAD
             Console.WriteLine($"\n=== Rozpoczyna siê bitwa! ===");
 =======
-            Console.WriteLine($"\n=== Rozpoczyna siÄ™ bitwa! ===");
+            Console.WriteLine($"\n=== Rozpoczyna siê bitwa! ===");
 >>>>>>> main
             Console.WriteLine($"Przeciwnik: {enemy.Name} (HP: {enemy.HP}/{enemy.MaxHP}, Atak: {enemy.AttackPower})");
             Console.WriteLine("Ekwipunek przeciwnika:");
@@ -258,7 +258,7 @@ namespace GRA_RPG
 <<<<<<< HEAD
                         Console.WriteLine("Nieprawid³owa opcja. Spróbuj ponownie.");
 =======
-                        Console.WriteLine("NieprawidÅ‚owa opcja. SprÃ³buj ponownie.");
+                        Console.WriteLine("Nieprawid³owa opcja. Spróbuj ponownie.");
 >>>>>>> main
                         break;
                 }
@@ -270,9 +270,9 @@ namespace GRA_RPG
             else if (enemy.IsDefeated())
                 Console.WriteLine($"Pokona³eœ przeciwnika: {enemy.Name}!");
 =======
-                Console.WriteLine("ZostaÅ‚eÅ› pokonany!");
+                Console.WriteLine("Zosta³eœ› pokonany!");
             else if (enemy.IsDefeated())
-                Console.WriteLine($"PokonaÅ‚eÅ› przeciwnika: {enemy.Name}!");
+                Console.WriteLine($"Pokona³eœ› przeciwnika: {enemy.Name}!");
 >>>>>>> main
         }
     }
