@@ -1,4 +1,4 @@
-Ôªøusing System;
+using System;
 using System.Collections.Generic;
 
 namespace GRA_RPG
@@ -22,7 +22,7 @@ namespace GRA_RPG
                         menu.ShowClasses();
                         break;
                     case "2":
-                        Console.WriteLine("Poka≈º wszystkie postacie - funkcjonalno≈õƒá do zaimplementowania.");
+                        Console.WriteLine("Pokaø wszystkie postacie - funkcjonalnoúÊ do zaimplementowania.");
                         break;
                     case "3":
                         Character player = new Character("Gracz", "mag");
@@ -32,14 +32,14 @@ namespace GRA_RPG
                         break;
                     case "4":
                         exit = true;
-                        Console.WriteLine("Dziƒôkujemy za grƒô!");
+                        Console.WriteLine("DziÍkujemy za grÍ!");
                         break;
                     case "5":
                         Game g = new Game();
                         g.Run();
                         break;
                     default:
-                        Console.WriteLine("Nieprawid≈Çowa opcja. Spr√≥buj ponownie.");
+                        Console.WriteLine("Nieprawid≥owa opcja. SprÛbuj ponownie.");
                         break;
                 }
             }
@@ -108,7 +108,7 @@ namespace GRA_RPG
                     MaxHP = 80;
                     AttackPower = 20;
                     break;
-                case "≈Çucznik":
+                case "≥ucznik":
                     MaxHP = 100;
                     AttackPower = 15;
                     break;
@@ -143,21 +143,21 @@ namespace GRA_RPG
     {
         public void ShowMainMenu()
         {
-            Console.WriteLine("=== G≈Ç√≥wne Menu ===");
-            Console.WriteLine("1. Stw√≥rz nowƒÖ postaƒá");
-            Console.WriteLine("2. Poka≈º wszystkie postacie");
-            Console.WriteLine("3. Rozpocznij bitwƒô");
-            Console.WriteLine("4. Wyjd≈∫ z gry");
-            Console.Write("Wybierz opcjƒô: ");
+            Console.WriteLine("=== G≥Ûwne Menu ===");
+            Console.WriteLine("1. StwÛrz nowπ postaÊ");
+            Console.WriteLine("2. Pokaø wszystkie postacie");
+            Console.WriteLine("3. Rozpocznij bitwÍ");
+            Console.WriteLine("4. Wyjdü z gry");
+            Console.Write("Wybierz opcjÍ: ");
         }
 
         public void ShowClasses()
         {
             Console.WriteLine("=== Klasy Postaci ===");
             Console.WriteLine("1. Mag - wysoki atak, niskie HP");
-            Console.WriteLine("2. ≈Åucznik - ≈õredni atak, ≈õrednie HP");
+            Console.WriteLine("2. £ucznik - úredni atak, úrednie HP");
             Console.WriteLine("3. Wojownik - niski atak, wysokie HP");
-            Console.Write("Wybierz klasƒô postaci: ");
+            Console.Write("Wybierz klasÍ postaci: ");
         }
     }
 
@@ -177,31 +177,31 @@ namespace GRA_RPG
             enemy.AddItem(new Item("Rusty Dagger", "A weak dagger", 10));
             enemy.AddItem(new Item("Shield Fragment", "Part of a broken shield", 5));
 
-            Console.WriteLine($"\n=== Rozpoczyna siƒô bitwa! ===");
+            Console.WriteLine($"\n=== Rozpoczyna siÍ bitwa! ===");
             Console.WriteLine($"Przeciwnik: {enemy.Name} (HP: {enemy.HP}/{enemy.MaxHP}, Atak: {enemy.AttackPower})");
             Console.WriteLine("Ekwipunek przeciwnika:");
             enemy.DisplayInventory();
 
             while (player.HP > 0 && !enemy.IsDefeated())
             {
-                Console.WriteLine($"\nTw√≥j HP: {player.HP}/{player.MaxHP}");
+                Console.WriteLine($"\nTwÛj HP: {player.HP}/{player.MaxHP}");
                 Console.WriteLine("1. Atakuj");
                 Console.WriteLine("2. Ucieczka");
-                Console.Write("Wybierz opcjƒô: ");
+                Console.Write("Wybierz opcjÍ: ");
                 string choice = Console.ReadLine();
 
                 switch (choice)
                 {
                     case "1":
                         int playerDamage = player.AttackPower;
-                        Console.WriteLine($"Zadajesz {playerDamage} obra≈ºe≈Ñ przeciwnikowi!");
+                        Console.WriteLine($"Zadajesz {playerDamage} obraøeÒ przeciwnikowi!");
                         enemy.TakeDamage(playerDamage);
 
                         if (!enemy.IsDefeated())
                         {
                             string enemyAttack = enemy.GetRandomAttack();
                             int enemyDamage = enemy.AttackPower;
-                            Console.WriteLine($"Przeciwnik u≈ºywa {enemyAttack} i zadaje {enemyDamage} obra≈ºe≈Ñ!");
+                            Console.WriteLine($"Przeciwnik uøywa {enemyAttack} i zadaje {enemyDamage} obraøeÒ!");
                             player.TakeDamage(enemyDamage);
                         }
                         break;
@@ -211,15 +211,15 @@ namespace GRA_RPG
                         return;
 
                     default:
-                        Console.WriteLine("Nieprawid≈Çowa opcja. Spr√≥buj ponownie.");
+                        Console.WriteLine("Nieprawid≥owa opcja. SprÛbuj ponownie.");
                         break;
                 }
             }
 
             if (player.HP <= 0)
-                Console.WriteLine("Zosta≈Çe≈õ pokonany!");
+                Console.WriteLine("Zosta≥eú pokonany!");
             else if (enemy.IsDefeated())
-                Console.WriteLine($"Pokona≈Çe≈õ przeciwnika: {enemy.Name}!");
+                Console.WriteLine($"Pokona≥eú przeciwnika: {enemy.Name}!");
         }
     }
 
