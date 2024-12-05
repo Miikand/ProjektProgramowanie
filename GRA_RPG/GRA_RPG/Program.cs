@@ -25,7 +25,6 @@ namespace GRA_RPG
                         Console.WriteLine("Pokaż wszystkie postacie - funkcjonalność do zaimplementowania.");
                         break;
                     case "3":
-                        // Przykładowe rozpoczęcie bitwy
                         Character player = new Character("Gracz", "mag");
                         Enemy enemy = new Enemy("Goblin", 1, 50, 10);
                         Game game = new Game();
@@ -47,79 +46,61 @@ namespace GRA_RPG
         }
     }
 
-    class Game
+    abstract class Entity
     {
-        public void Run()
+        public string Name { get; set; }
+        public int Level { get; protected set; }
+        public int HP { get; protected set; }
+        public int MaxHP { get; protected set; }
+        public int AttackPower { get; protected set; }
+        public List<Item> Inventory { get; private set; }
+
+        public Entity(string name, int level, int maxHP, int attackPower)
         {
-            Character mainCharacter = new Character("John", "mag");
-            mainCharacter.AddItem(new Item("Magic Wand", "A powerful wand", 50));
-            mainCharacter.AddItem(new Item("Health Potion", "Restores 50 HP", 50));
-            mainCharacter.DisplayInventory();
+            Name = name;
+            Level = level;
+            MaxHP = maxHP;
+            HP = maxHP;
+            AttackPower = attackPower;
+            Inventory = new List<Item>();
         }
 
-        public void StartBattle(Character player, Enemy enemy)
+        public void TakeDamage(int damage)
         {
-            Console.WriteLine($"\n=== Rozpoczyna się bitwa! ===");
-            Console.WriteLine($"Przeciwnik: {enemy.Name} (HP: {enemy.HP}/{enemy.MaxHP}, Atak: {enemy.AttackPower})");
+            HP -= damage;
+            if (HP < 0) HP = 0;
+        }
 
-            while (player.HP > 0 && !enemy.IsDefeated())
+        public bool IsDefeated()
+        {
+            return HP <= 0;
+        }
+
+        public void AddItem(Item item)
+        {
+            Inventory.Add(item);
+        }
+
+        public void DisplayInventory()
+        {
+            Console.WriteLine($"\n=== Ekwipunek {Name} ===");
+            foreach (var item in Inventory)
             {
-                Console.WriteLine($"\nTwój HP: {player.HP}/{player.MaxHP}");
-                Console.WriteLine("1. Atakuj");
-                Console.WriteLine("2. Ucieczka");
-                Console.Write("Wybierz opcję: ");
-                string choice = Console.ReadLine();
-
-                switch (choice)
-                {
-                    case "1":
-                        int playerDamage = player.AttackPower;
-                        Console.WriteLine($"Zadajesz {playerDamage} obrażeń przeciwnikowi!");
-                        enemy.TakeDamage(playerDamage);
-
-                        if (!enemy.IsDefeated())
-                        {
-                            int enemyDamage = enemy.AttackPower;
-                            Console.WriteLine($"Przeciwnik kontratakuje i zadaje {enemyDamage} obrażeń!");
-                            player.TakeDamage(enemyDamage);
-                        }
-                        break;
-
-                    case "2":
-                        Console.WriteLine("Uciekasz z walki!");
-                        return;
-
-                    default:
-                        Console.WriteLine("Nieprawidłowa opcja. Spróbuj ponownie.");
-                        break;
-                }
+                Console.WriteLine($"{item.Name} - {item.Description} (Moc: {item.Power})");
             }
-
-            if (player.HP <= 0)
-                Console.WriteLine("Zostałeś pokonany!");
-            else if (enemy.IsDefeated())
-                Console.WriteLine($"Pokonałeś przeciwnika: {enemy.Name}!");
         }
     }
 
-    class Character
+    class Character : Entity
     {
-        public string Name { get; set; }
         public string Class { get; set; }
-        public int Level { get; private set; }
         public int Experience { get; private set; }
-        public int HP { get; private set; }
-        public int MaxHP { get; private set; }
-        public int AttackPower { get; private set; }
-        public List<Item> Inventory { get; private set; }
 
         public Character(string name, string charClass)
+            : base(name, 1, 0, 0)
         {
-            Name = name;
             Class = charClass;
-            Level = 1;
             Experience = 0;
-            Inventory = new List<Item>();
 
             switch (Class.ToLower())
             {
@@ -141,26 +122,20 @@ namespace GRA_RPG
 
             HP = MaxHP;
         }
+    }
 
-        public void TakeDamage(int damage)
-        {
-            HP -= damage;
-            if (HP < 0) HP = 0;
-        }
+    class Enemy : Entity
+    {
+        private static Random random = new Random();
+        private List<string> attackTypes = new List<string> { "Slash", "Bite", "Stomp", "Fireball" };
 
-        public void AddItem(Item item)
-        {
-            Inventory.Add(item);
-            Console.WriteLine($"{item.Name} dodano do ekwipunku.");
-        }
+        public Enemy(string name, int level, int maxHP, int attackPower)
+            : base(name, level, maxHP, attackPower) { }
 
-        public void DisplayInventory()
+        public string GetRandomAttack()
         {
-            Console.WriteLine("=== Ekwipunek ===");
-            foreach (var item in Inventory)
-            {
-                Console.WriteLine($"{item.Name} - {item.Description} (Moc: {item.Power})");
-            }
+            int index = random.Next(attackTypes.Count);
+            return attackTypes[index];
         }
     }
 
@@ -186,6 +161,68 @@ namespace GRA_RPG
         }
     }
 
+    class Game
+    {
+        public void Run()
+        {
+            Character mainCharacter = new Character("John", "mag");
+            mainCharacter.AddItem(new Item("Magic Wand", "A powerful wand", 50));
+            mainCharacter.AddItem(new Item("Health Potion", "Restores 50 HP", 50));
+            Console.WriteLine("Ekwipunek gracza:");
+            mainCharacter.DisplayInventory();
+        }
+
+        public void StartBattle(Character player, Enemy enemy)
+        {
+            enemy.AddItem(new Item("Rusty Dagger", "A weak dagger", 10));
+            enemy.AddItem(new Item("Shield Fragment", "Part of a broken shield", 5));
+
+            Console.WriteLine($"\n=== Rozpoczyna się bitwa! ===");
+            Console.WriteLine($"Przeciwnik: {enemy.Name} (HP: {enemy.HP}/{enemy.MaxHP}, Atak: {enemy.AttackPower})");
+            Console.WriteLine("Ekwipunek przeciwnika:");
+            enemy.DisplayInventory();
+
+            while (player.HP > 0 && !enemy.IsDefeated())
+            {
+                Console.WriteLine($"\nTwój HP: {player.HP}/{player.MaxHP}");
+                Console.WriteLine("1. Atakuj");
+                Console.WriteLine("2. Ucieczka");
+                Console.Write("Wybierz opcję: ");
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        int playerDamage = player.AttackPower;
+                        Console.WriteLine($"Zadajesz {playerDamage} obrażeń przeciwnikowi!");
+                        enemy.TakeDamage(playerDamage);
+
+                        if (!enemy.IsDefeated())
+                        {
+                            string enemyAttack = enemy.GetRandomAttack();
+                            int enemyDamage = enemy.AttackPower;
+                            Console.WriteLine($"Przeciwnik używa {enemyAttack} i zadaje {enemyDamage} obrażeń!");
+                            player.TakeDamage(enemyDamage);
+                        }
+                        break;
+
+                    case "2":
+                        Console.WriteLine("Uciekasz z walki!");
+                        return;
+
+                    default:
+                        Console.WriteLine("Nieprawidłowa opcja. Spróbuj ponownie.");
+                        break;
+                }
+            }
+
+            if (player.HP <= 0)
+                Console.WriteLine("Zostałeś pokonany!");
+            else if (enemy.IsDefeated())
+                Console.WriteLine($"Pokonałeś przeciwnika: {enemy.Name}!");
+        }
+    }
+
     class Item
     {
         public string Name { get; set; }
@@ -197,36 +234,6 @@ namespace GRA_RPG
             Name = name;
             Description = description;
             Power = power;
-        }
-    }
-
-    class Enemy
-    {
-        public string Name { get; set; }
-        public int Level { get; private set; }
-        public int HP { get; private set; }
-        public int MaxHP { get; private set; }
-        public int AttackPower { get; private set; }
-
-        public Enemy(string name, int level, int maxHP, int attackPower)
-        {
-            Name = name;
-            Level = level;
-            MaxHP = maxHP;
-            HP = maxHP;
-            AttackPower = attackPower;
-        }
-
-        public void TakeDamage(int damage)
-        {
-            HP -= damage;
-            if (HP < 0) HP = 0;
-            Console.WriteLine($"{Name} otrzymał {damage} obrażeń. Pozostało HP: {HP}/{MaxHP}.");
-        }
-
-        public bool IsDefeated()
-        {
-            return HP <= 0;
         }
     }
 }
