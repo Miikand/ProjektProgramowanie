@@ -7,6 +7,7 @@ namespace GRA_RPG
     {
         static void Main(string[] args)
         {
+            UserManager userManager = new UserManager();
             Menu menu = new Menu();
             List<Enemy> enemies = new List<Enemy>();
             bool exit = false;
@@ -19,10 +20,10 @@ namespace GRA_RPG
                 switch (choice)
                 {
                     case "1":
-                        menu.ShowClasses();
+                        userManager.RegisterUser();
                         break;
                     case "2":
-                        Console.WriteLine("Poka¿ wszystkie postacie - funkcjonalnoœæ do zaimplementowania.");
+                        userManager.ShowAllUsers();
                         break;
                     case "3":
                         Character player = new Character("Gracz", "mag");
@@ -34,14 +35,77 @@ namespace GRA_RPG
                         exit = true;
                         Console.WriteLine("Dziêkujemy za grê!");
                         break;
-                    case "5":
-                        Game g = new Game();
-                        g.Run();
-                        break;
                     default:
                         Console.WriteLine("Nieprawid³owa opcja. Spróbuj ponownie.");
                         break;
                 }
+            }
+        }
+    }
+
+    class User
+    {
+        public string Username { get; private set; }
+        public string Password { get; private set; }
+
+        public User(string username, string password)
+        {
+            Username = username;
+            Password = password;
+        }
+    }
+
+    class UserManager
+    {
+        private List<User> users;
+
+        public UserManager()
+        {
+            users = new List<User>();
+        }
+
+        public void RegisterUser()
+        {
+            Console.Write("Podaj nazwê u¿ytkownika: ");
+            string username = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                Console.WriteLine("Nazwa u¿ytkownika nie mo¿e byæ pusta!");
+                return;
+            }
+
+            Console.Write("Podaj has³o: ");
+            string password = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                Console.WriteLine("Has³o nie mo¿e byæ puste!");
+                return;
+            }
+
+            if (users.Exists(u => u.Username == username))
+            {
+                Console.WriteLine("U¿ytkownik o takiej nazwie ju¿ istnieje!");
+                return;
+            }
+
+            users.Add(new User(username, password));
+            Console.WriteLine("Rejestracja zakoñczona sukcesem!");
+        }
+
+        public void ShowAllUsers()
+        {
+            Console.WriteLine("\n=== Zarejestrowani U¿ytkownicy ===");
+            if (users.Count == 0)
+            {
+                Console.WriteLine("Brak zarejestrowanych u¿ytkowników.");
+                return;
+            }
+
+            foreach (var user in users)
+            {
+                Console.WriteLine($"- {user.Username}");
             }
         }
     }
@@ -143,21 +207,12 @@ namespace GRA_RPG
     {
         public void ShowMainMenu()
         {
-            Console.WriteLine("=== G³ówne Menu ===");
-            Console.WriteLine("1. Stwórz now¹ postaæ");
-            Console.WriteLine("2. Poka¿ wszystkie postacie");
+            Console.WriteLine("\n=== G³ówne Menu ===");
+            Console.WriteLine("1. Zarejestruj u¿ytkownika");
+            Console.WriteLine("2. Wyœwietl u¿ytkowników");
             Console.WriteLine("3. Rozpocznij bitwê");
             Console.WriteLine("4. WyjdŸ z gry");
             Console.Write("Wybierz opcjê: ");
-        }
-
-        public void ShowClasses()
-        {
-            Console.WriteLine("=== Klasy Postaci ===");
-            Console.WriteLine("1. Mag - wysoki atak, niskie HP");
-            Console.WriteLine("2. £ucznik - œredni atak, œrednie HP");
-            Console.WriteLine("3. Wojownik - niski atak, wysokie HP");
-            Console.Write("Wybierz klasê postaci: ");
         }
     }
 
