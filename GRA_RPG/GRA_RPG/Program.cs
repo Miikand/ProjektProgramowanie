@@ -1,6 +1,6 @@
-using GRA_RPG;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace GRA_RPG
 {
@@ -10,10 +10,12 @@ namespace GRA_RPG
         {
             UserManager userManager = new UserManager();
             Menu menu = new Menu();
-            List<Enemy> enemies = new List<Enemy>();
             bool exit = false;
             bool loggedIn = false;
             User currentUser = null;
+
+            // Wczytaj u¿ytkowników z pliku
+            userManager.LoadUsers();
 
             while (!exit)
             {
@@ -56,6 +58,9 @@ namespace GRA_RPG
                             Enemy enemy = new Enemy("Goblin", 1, 50, 10);
                             Game game = new Game();
                             game.StartBattle(player, enemy);
+                            // Zaktualizuj postêpy u¿ytkownika
+                            currentUser.Progress.Level = player.Level;
+                            currentUser.Progress.Experience = player.Experience;
                             break;
                         case "2":
                             loggedIn = false;
@@ -72,6 +77,9 @@ namespace GRA_RPG
                     }
                 }
             }
+
+            // Zapisz u¿ytkowników do pliku przed zakoñczeniem
+            userManager.SaveUsers();
         }
     }
 
@@ -79,11 +87,13 @@ namespace GRA_RPG
     {
         public string Username { get; private set; }
         public string Password { get; private set; }
+        public UserProgress Progress { get; set; }
 
         public User(string username, string password)
         {
             Username = username;
             Password = password;
+            Progress = new UserProgress();
         }
 
         public bool ValidatePassword(string password)
@@ -92,9 +102,22 @@ namespace GRA_RPG
         }
     }
 
+    class UserProgress
+    {
+        public int Level { get; set; }
+        public int Experience { get; set; }
+
+        public UserProgress()
+        {
+            Level = 1;
+            Experience = 0;
+        }
+    }
+
     class UserManager
     {
         private List<User> users;
+        private const string FilePath = "../../../users.txt";
 
         public UserManager()
         {
@@ -152,6 +175,67 @@ namespace GRA_RPG
             }
 
             return user;
+        }
+
+        public void SaveUsers()
+        {
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(FilePath))
+                {
+                    foreach (var user in users)
+                    {
+                        // Zapisz u¿ytkownika w formacie tekstowym
+                        writer.WriteLine($"{user.Username}|{user.Password}|{user.Progress.Level}|{user.Progress.Experience}");
+                    }
+                }
+                Console.WriteLine("Dane u¿ytkowników zapisano.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"B³¹d zapisywania danych: {ex.Message}");
+            }
+        }
+
+        public void LoadUsers()
+        {
+            if (File.Exists(FilePath))
+            {
+                try
+                {
+                    using (StreamReader reader = new StreamReader(FilePath))
+                    {
+                        string line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            string[] parts = line.Split('|');
+                            if (parts.Length == 4)
+                            {
+                                string username = parts[0];
+                                string password = parts[1];
+                                int level = int.Parse(parts[2]);
+                                int experience = int.Parse(parts[3]);
+
+                                var user = new User(username, password)
+                                {
+                                    Progress = new UserProgress
+                                    {
+                                        Level = level,
+                                        Experience = experience
+                                    }
+                                };
+
+                                users.Add(user);
+                            }
+                        }
+                    }
+                    Console.WriteLine("Dane u¿ytkowników wczytano.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"B³¹d wczytywania danych: {ex.Message}");
+                }
+            }
         }
     }
 
@@ -282,65 +366,66 @@ namespace GRA_RPG
             Power = power;
         }
     }
-}
-class Game
-{
-    public void StartBattle(Character player, Enemy enemy)
+
+    class Game
     {
-        Console.WriteLine($"\n=== Rozpoczêcie bitwy: {player.Name} vs {enemy.Name} ===");
-        Console.WriteLine($"Statystyki {player.Name}: HP: {player.HP}/{player.MaxHP}, Atak: {player.AttackPower}");
-        Console.WriteLine($"Statystyki {enemy.Name}: HP: {enemy.HP}/{enemy.MaxHP}, Atak: {enemy.AttackPower}");
-
-        while (!player.IsDefeated() && !enemy.IsDefeated())
+        public void StartBattle(Character player, Enemy enemy)
         {
-            Console.WriteLine("\n=== Tura Gracza ===");
-            Console.WriteLine("1. Atakuj");
-            Console.WriteLine("2. Wyœwietl ekwipunek");
-            Console.WriteLine("Wybierz opcjê: ");
-            string choice = Console.ReadLine();
+            Console.WriteLine($"\n=== Rozpoczêcie bitwy: {player.Name} vs {enemy.Name} ===");
+            Console.WriteLine($"Statystyki {player.Name}: HP: {player.HP}/{player.MaxHP}, Atak: {player.AttackPower}");
+            Console.WriteLine($"Statystyki {enemy.Name}: HP: {enemy.HP}/{enemy.MaxHP}, Atak: {enemy.AttackPower}");
 
-            switch (choice)
+            while (!player.IsDefeated() && !enemy.IsDefeated())
             {
-                case "1":
-                    Attack(player, enemy);
-                    break;
-                case "2":
-                    player.DisplayInventory();
-                    break;
-                default:
-                    Console.WriteLine("Nieprawid³owa opcja! Tracisz kolejkê.");
-                    break;
-            }
+                Console.WriteLine("\n=== Tura Gracza ===");
+                Console.WriteLine("1. Atakuj");
+                Console.WriteLine("2. Wyœwietl ekwipunek");
+                Console.WriteLine("Wybierz opcjê: ");
+                string choice = Console.ReadLine();
 
-            if (enemy.IsDefeated())
-            {
-                Console.WriteLine($"\nGratulacje! Pokona³eœ {enemy.Name}!");
-                break;
-            }
+                switch (choice)
+                {
+                    case "1":
+                        Attack(player, enemy);
+                        break;
+                    case "2":
+                        player.DisplayInventory();
+                        break;
+                    default:
+                        Console.WriteLine("Nieprawid³owa opcja! Tracisz kolejkê.");
+                        break;
+                }
 
-            Console.WriteLine("\n=== Tura Wroga ===");
-            EnemyAttack(player, enemy);
+                if (enemy.IsDefeated())
+                {
+                    Console.WriteLine($"\nGratulacje! Pokona³eœ {enemy.Name}!");
+                    break;
+                }
 
-            if (player.IsDefeated())
-            {
-                Console.WriteLine("\nZosta³eœ pokonany! Gra zakoñczona.");
-                break;
+                Console.WriteLine("\n=== Tura Wroga ===");
+                EnemyAttack(player, enemy);
+
+                if (player.IsDefeated())
+                {
+                    Console.WriteLine("\nZosta³eœ pokonany! Gra zakoñczona.");
+                    break;
+                }
             }
         }
-    }
 
-    private void Attack(Entity attacker, Entity defender)
-    {
-        Console.WriteLine($"\n{attacker.Name} atakuje {defender.Name} i zadaje {attacker.AttackPower} obra¿eñ!");
-        defender.TakeDamage(attacker.AttackPower);
-        Console.WriteLine($"{defender.Name} ma teraz {defender.HP}/{defender.MaxHP} HP.");
-    }
+        private void Attack(Entity attacker, Entity defender)
+        {
+            Console.WriteLine($"\n{attacker.Name} atakuje {defender.Name} i zadaje {attacker.AttackPower} obra¿eñ!");
+            defender.TakeDamage(attacker.AttackPower);
+            Console.WriteLine($"{defender.Name} ma teraz {defender.HP}/{defender.MaxHP} HP.");
+        }
 
-    private void EnemyAttack(Entity player, Enemy enemy)
-    {
-        string attackType = enemy.GetRandomAttack();
-        Console.WriteLine($"\n{enemy.Name} u¿ywa ataku: {attackType} i zadaje {enemy.AttackPower} obra¿eñ!");
-        player.TakeDamage(enemy.AttackPower);
-        Console.WriteLine($"{player.Name} ma teraz {player.HP}/{player.MaxHP} HP.");
+        private void EnemyAttack(Entity player, Enemy enemy)
+        {
+            string attackType = enemy.GetRandomAttack();
+            Console.WriteLine($"\n{enemy.Name} u¿ywa ataku: {attackType} i zadaje {enemy.AttackPower} obra¿eñ!");
+            player.TakeDamage(enemy.AttackPower);
+            Console.WriteLine($"{player.Name} ma teraz {player.HP}/{player.MaxHP} HP.");
+        }
     }
 }
