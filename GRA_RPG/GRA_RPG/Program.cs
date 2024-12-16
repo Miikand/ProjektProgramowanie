@@ -500,7 +500,7 @@ namespace RPGGame
             }
 
             userManager.SaveUsers();
-            Console.WriteLine("\n>>> Zakoñczenie gry . <<<");
+            Console.WriteLine("\n>>> Zakoñczenie gry. <<<");
         }
     }
 }
