@@ -2,95 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace GRA_RPG
+namespace Gra_RPG
 {
-    internal class Program
+    // === KLASY ===
+
+    // Klasa przechowuj¹ca postêp u¿ytkownika (poziom i doœwiadczenie)
+    public class UserProgress
     {
-        static void Main(string[] args)
-        {
-            UserManager userManager = new UserManager();
-            Menu menu = new Menu();
-            bool exit = false;
-            bool loggedIn = false;
-            User currentUser = null;
-
-            userManager.LoadUsers();
-
-            while (!exit)
-            {
-                if (!loggedIn)
-                {
-                    menu.ShowAuthMenu();
-                    string choice = Console.ReadLine()?.Trim();
-
-                    switch (choice)
-                    {
-                        case "1":
-                            userManager.RegisterUser();
-                            break;
-                        case "2":
-                            currentUser = userManager.LoginUser();
-                            if (currentUser != null)
-                            {
-                                loggedIn = true;
-                                Console.WriteLine($"\n>>> Zalogowano jako: {currentUser.Username} <<<\n");
-                            }
-                            break;
-                        case "3":
-                            exit = true;
-                            Console.WriteLine("\n>>> Dziêkujemy za skorzystanie z programu! <<<\n");
-                            break;
-                        default:
-                            Console.WriteLine("\n>>> Nieprawid³owa opcja. Spróbuj ponownie. <<<\n");
-                            break;
-                    }
-                }
-                else
-                {
-                    menu.ShowMainMenu();
-                    string choice = Console.ReadLine()?.Trim();
-
-                    switch (choice)
-                    {
-                        case "1":
-                            Character player = menu.CreateCharacter();
-                            player.AddItem(new Item("Magic Wand", "A powerful wand", 50));
-                            player.AddItem(new Item("Health Potion", "Restores 50 HP", 50));
-
-                            Enemy enemy = new Enemy("Goblin", 1, 50, 10);
-                            enemy.AddItem(new Item("Rusty Dagger", "A weak dagger", 10));
-                            enemy.AddItem(new Item("Shield Fragment", "Part of a broken shield", 5));
-
-                            Game game = new Game();
-                            game.StartBattle(player, enemy);
-
-                            currentUser.Progress.Level = player.Level;
-                            currentUser.Progress.Experience = player.Experience;
-                            break;
-                        case "2":
-                            loggedIn = false;
-                            currentUser = null;
-                            Console.WriteLine("\n>>> Wylogowano. <<<\n");
-                            break;
-                        case "3":
-                            exit = true;
-                            Console.WriteLine("\n>>> Dziêkujemy za grê! <<<\n");
-                            break;
-                        default:
-                            Console.WriteLine("\n>>> Nieprawid³owa opcja. Spróbuj ponownie. <<<\n");
-                            break;
-                    }
-                }
-            }
-
-            userManager.SaveUsers();
-        }
+        public int Level { get; set; } = 1;
+        public int Experience { get; set; } = 0;
     }
 
-    class User
+    // Klasa reprezentuj¹ca u¿ytkownika
+    public class User
     {
-        public string Username { get; private set; }
-        public string Password { get; private set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
         public UserProgress Progress { get; set; }
 
         public User(string username, string password)
@@ -99,26 +26,10 @@ namespace GRA_RPG
             Password = password;
             Progress = new UserProgress();
         }
-
-        public bool ValidatePassword(string password)
-        {
-            return Password == password;
-        }
     }
 
-    class UserProgress
-    {
-        public int Level { get; set; }
-        public int Experience { get; set; }
-
-        public UserProgress()
-        {
-            Level = 1;
-            Experience = 0;
-        }
-    }
-
-    class UserManager
+    // Klasa zarz¹dzaj¹ca u¿ytkownikami, logowaniem i rejestracj¹
+    public class UserManager
     {
         private List<User> users;
         private const string FilePath = "../../../users.txt";
@@ -172,7 +83,7 @@ namespace GRA_RPG
                 return null;
             }
 
-            if (!user.ValidatePassword(password))
+            if (user.Password != password)
             {
                 Console.WriteLine("\n>>> Nieprawid³owe has³o. <<<\n");
                 return null;
@@ -242,7 +153,23 @@ namespace GRA_RPG
         }
     }
 
-    abstract class Entity
+    // Klasa reprezentuj¹ca przedmiot
+    public class Item
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int Power { get; set; }
+
+        public Item(string name, string description, int power)
+        {
+            Name = name;
+            Description = description;
+            Power = power;
+        }
+    }
+
+    // Klasa bazowa dla postaci i przeciwników
+    public abstract class Entity
     {
         public string Name { get; set; }
         public int Level { get; protected set; }
@@ -280,14 +207,43 @@ namespace GRA_RPG
         public void DisplayInventory()
         {
             Console.WriteLine($"\n=== Ekwipunek {Name} ===");
-            foreach (var item in Inventory)
+            if (Inventory.Count == 0)
             {
-                Console.WriteLine($"{item.Name} - {item.Description} (Moc: {item.Power})");
+                Console.WriteLine("Brak przedmiotów w ekwipunku.");
+                return;
+            }
+
+            for (int i = 0; i < Inventory.Count; i++)
+            {
+                var item = Inventory[i];
+                Console.WriteLine($"{i + 1}. {item.Name} - {item.Description} (Moc: {item.Power})");
+            }
+        }
+
+        public void UseItem(int index)
+        {
+            if (index < 0 || index >= Inventory.Count)
+            {
+                Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
+                return;
+            }
+
+            Item item = Inventory[index];
+            if (item.Name.Contains("Mikstura", StringComparison.OrdinalIgnoreCase))
+            {
+                HP = Math.Min(MaxHP, HP + item.Power);
+                Console.WriteLine($"\n>>> U¿yto {item.Name}. Odzyskano {item.Power} HP. Aktualne HP: {HP}/{MaxHP} <<<\n");
+                Inventory.RemoveAt(index);
+            }
+            else
+            {
+                Console.WriteLine($"\n>>> {item.Name} nie mo¿e byæ u¿yty w tym momencie. <<<\n");
             }
         }
     }
 
-    class Character : Entity
+    // Klasa reprezentuj¹ca postaæ gracza
+    public class Character : Entity
     {
         public string Class { get; set; }
         public int Experience { get; private set; }
@@ -320,7 +276,8 @@ namespace GRA_RPG
         }
     }
 
-    class Enemy : Entity
+    // Klasa reprezentuj¹ca przeciwnika
+    public class Enemy : Entity
     {
         private static Random random = new Random();
         private List<string> attackTypes = new List<string> { "Ciêcie", "Ugryzienie", "Taran", "Kula Ognia" };
@@ -335,7 +292,8 @@ namespace GRA_RPG
         }
     }
 
-    class Menu
+    // Klasa odpowiedzialna za wyœwietlanie menu
+    public class Menu
     {
         public void ShowAuthMenu()
         {
@@ -350,8 +308,9 @@ namespace GRA_RPG
         {
             Console.WriteLine("\n=== G³ówne Menu ===");
             Console.WriteLine("1. Rozpocznij bitwê");
-            Console.WriteLine("2. Wyloguj siê");
-            Console.WriteLine("3. WyjdŸ z gry");
+            Console.WriteLine("2. Zarz¹dzaj ekwipunkiem");
+            Console.WriteLine("3. Wyloguj siê");
+            Console.WriteLine("4. WyjdŸ z gry");
             Console.Write("Wybierz opcjê: ");
         }
 
@@ -381,76 +340,167 @@ namespace GRA_RPG
         }
     }
 
-    class Item
+    // Klasa odpowiedzialna za przeprowadzanie walki
+    public class Game
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public int Power { get; set; }
-
-        public Item(string name, string description, int power)
-        {
-            Name = name;
-            Description = description;
-            Power = power;
-        }
-    }
-
-    class Game
-    {
-        public void Run()
-        {
-            Character mainCharacter = new Character("John", "mag");
-            mainCharacter.AddItem(new Item("Magic Wand", "A powerful wand", 50));
-            mainCharacter.AddItem(new Item("Health Potion", "Restores 50 HP", 50));
-
-            Console.WriteLine("Ekwipunek gracza:");
-            mainCharacter.DisplayInventory();
-        }
+        private Random random = new Random();
 
         public void StartBattle(Character player, Enemy enemy)
         {
-            Console.WriteLine($"\n=== Rozpoczyna siê bitwa! ===");
-            Console.WriteLine($"Przeciwnik: {enemy.Name} (HP: {enemy.HP}/{enemy.MaxHP}, Atak: {enemy.AttackPower})");
-            Console.WriteLine("Ekwipunek przeciwnika:");
-            enemy.DisplayInventory();
-
-            while (player.HP > 0 && !enemy.IsDefeated())
+            Console.WriteLine("\n=== Rozpoczêcie walki ===");
+            while (!player.IsDefeated() && !enemy.IsDefeated())
             {
-                Console.WriteLine($"\nTwój HP: {player.HP}/{player.MaxHP}");
-                Console.WriteLine("1. Atakuj");
-                Console.WriteLine("2. Ucieczka");
-                Console.Write("Wybierz opcjê: ");
-                string choice = Console.ReadLine()?.Trim();
+                Console.WriteLine($"\n{player.Name}: {player.HP}/{player.MaxHP} HP");
+                Console.WriteLine($"{enemy.Name}: {enemy.HP}/{enemy.MaxHP} HP");
+                Console.WriteLine("\n1. Atakuj");
+                Console.WriteLine("2. U¿yj przedmiotu");
+                Console.Write("Wybierz akcjê: ");
 
-                switch (choice)
+                string action = Console.ReadLine()?.Trim();
+                switch (action)
                 {
                     case "1":
-                        int playerDamage = player.AttackPower;
-                        Console.WriteLine($"\n>>> Zadajesz {playerDamage} obra¿eñ przeciwnikowi! <<<");
+                        int playerDamage = random.Next(player.AttackPower - 5, player.AttackPower + 5);
                         enemy.TakeDamage(playerDamage);
-
-                        if (!enemy.IsDefeated())
+                        Console.WriteLine($"\n>>> Zada³eœ {playerDamage} obra¿eñ przeciwnikowi! <<<");
+                        break;
+                    case "2":
+                        player.DisplayInventory();
+                        Console.Write("Wybierz przedmiot do u¿ycia (numer): ");
+                        if (int.TryParse(Console.ReadLine(), out int itemIndex))
                         {
-                            int enemyDamage = enemy.AttackPower;
-                            Console.WriteLine($">>> Przeciwnik kontratakuje i zadaje {enemyDamage} obra¿eñ! <<<\n");
-                            player.TakeDamage(enemyDamage);
+                            player.UseItem(itemIndex - 1); // Indeksowanie zaczyna siê od 1, wiêc odejmujemy 1
+                        }
+                        else
+                        {
+                            Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
                         }
                         break;
-
-                    case "2":
-                        Console.WriteLine("\n>>> Uciekasz z walki! <<<\n");
-                        return;
-
                     default:
-                        Console.WriteLine("\n>>> Nieprawid³owa opcja. Spróbuj ponownie. <<<\n");
+                        Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
                         break;
+                }
+
+                if (!enemy.IsDefeated())
+                {
+                    int enemyDamage = random.Next(enemy.AttackPower - 3, enemy.AttackPower + 3);
+                    player.TakeDamage(enemyDamage);
+                    Console.WriteLine($"\n>>> {enemy.Name} zada³ {enemyDamage} obra¿eñ! <<<");
                 }
             }
 
-            if (player.HP <= 0)
-                Console.WriteLine("\n>>> Zosta³eœ pokonany! <<<\n");
-            else if (enemy.IsDefeated())
-                Console.WriteLine($"\n>>> Pokona³eœ przeciwnika: {enemy.Name}! <<<\n");
+            if (player.IsDefeated())
+            {
+                Console.WriteLine("\n>>> Zosta³eœ pokonany. <<<");
+            }
+            else
+            {
+                Console.WriteLine("\n>>> Pokona³eœ przeciwnika! <<<");
+            }
+        }
+
+        public void RewardPlayer(Character player)
+        {
+            Console.WriteLine("\n=== £upy po walce ===");
+
+            // 75% szans na miksturê
+            if (random.Next(100) < 75)
+            {
+                Item potion = new Item("Mikstura Zdrowia", "Przywraca 50 HP.", 50);
+                player.AddItem(potion);
+                Console.WriteLine($">>> Otrzymano: {potion.Name} - {potion.Description}");
+            }
+
+            // 20% szans na now¹ broñ lub zbrojê
+            if (random.Next(100) < 20)
+            {
+                Item weapon = new Item("Miecz", "Zwiêksza moc ataku.", 10);
+                player.AddItem(weapon);
+                Console.WriteLine($">>> Otrzymano: {weapon.Name} - {weapon.Description}");
+            }
+        }
+    }
+
+    // Klasa g³ówna gry
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            UserManager userManager = new UserManager();
+            userManager.LoadUsers();
+            Menu menu = new Menu();
+            User currentUser = null;
+            Character player = null;
+            bool loggedIn = false;
+            bool exit = false;
+
+            while (!exit)
+            {
+                if (!loggedIn)
+                {
+                    menu.ShowAuthMenu();
+                    string choice = Console.ReadLine()?.Trim();
+
+                    switch (choice)
+                    {
+                        case "1":
+                            userManager.RegisterUser();
+                            break;
+                        case "2":
+                            currentUser = userManager.LoginUser();
+                            if (currentUser != null)
+                            {
+                                loggedIn = true;
+                                Console.WriteLine($"\n>>> Witaj, {currentUser.Username}! <<<\n");
+                                player = menu.CreateCharacter(); // Tworzenie nowej postaci
+                            }
+                            break;
+                        case "3":
+                            exit = true;
+                            break;
+                        default:
+                            Console.WriteLine("\n>>> Nieprawid³owy wybór. Spróbuj ponownie. <<<");
+                            break;
+                    }
+                }
+                else
+                {
+                    menu.ShowMainMenu();
+                    string choice = Console.ReadLine()?.Trim();
+
+                    switch (choice)
+                    {
+                        case "1":
+                            Enemy enemy = new Enemy("Ork", 1, 50, 12);
+                            Game game = new Game();
+                            game.StartBattle(player, enemy);
+                            game.RewardPlayer(player); // Nagradzanie po walce
+                            break;
+                        case "2":
+                            player.DisplayInventory();
+                            Console.Write("Wybierz przedmiot do u¿ycia (numer): ");
+                            if (int.TryParse(Console.ReadLine(), out int itemIndex))
+                            {
+                                player.UseItem(itemIndex - 1); // Indeksowanie zaczyna siê od 1, wiêc odejmujemy 1
+                            }
+                            break;
+                        case "3":
+                            loggedIn = false;
+                            currentUser = null;
+                            player = null;
+                            break;
+                        case "4":
+                            exit = true;
+                            break;
+                        default:
+                            Console.WriteLine("\n>>> Nieprawid³owy wybór. Spróbuj ponownie. <<<");
+                            break;
+                    }
+                }
+            }
+
+            userManager.SaveUsers();
+            Console.WriteLine("\n>>> Zakoñczenie gry. <<<");
         }
     }
 }
