@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace RPGGame
+namespace Gra_RPG
 {
     // === KLASY ===
 
