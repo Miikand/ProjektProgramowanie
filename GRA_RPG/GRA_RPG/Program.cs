@@ -159,13 +159,22 @@ namespace Gra_RPG
         public string Name { get; set; }
         public string Description { get; set; }
         public int Power { get; set; }
+        public ItemType Type { get; set; }
 
-        public Item(string name, string description, int power)
+        public Item(string name, string description, int power, ItemType type)
         {
             Name = name;
             Description = description;
             Power = power;
+            Type = type;
         }
+    }
+
+    // Typy przedmiotów
+    public enum ItemType
+    {
+        Weapon,
+        HealthPotion
     }
 
     // Klasa bazowa dla postaci i przeciwników
@@ -229,15 +238,17 @@ namespace Gra_RPG
             }
 
             Item item = Inventory[index];
-            if (item.Name.Contains("Mikstura", StringComparison.OrdinalIgnoreCase))
+            if (item.Type == ItemType.HealthPotion)
             {
                 HP = Math.Min(MaxHP, HP + item.Power);
                 Console.WriteLine($"\n>>> U¿yto {item.Name}. Odzyskano {item.Power} HP. Aktualne HP: {HP}/{MaxHP} <<<\n");
                 Inventory.RemoveAt(index);
             }
-            else
+            else if (item.Type == ItemType.Weapon)
             {
-                Console.WriteLine($"\n>>> {item.Name} nie mo¿e byæ u¿yty w tym momencie. <<<\n");
+                Console.WriteLine($"\n>>> U¿yto {item.Name}. Atak zwiêkszony o {item.Power}. <<<");
+                AttackPower += item.Power;
+                Inventory.RemoveAt(index); // Usuñ przedmiot po u¿yciu
             }
         }
     }
@@ -249,7 +260,7 @@ namespace Gra_RPG
         public int Experience { get; private set; }
 
         public Character(string name, string charClass)
-            : base(name, 1, 0, 0)
+            : base(name, 1, 100, 10)
         {
             Class = charClass;
             Experience = 0;
@@ -406,15 +417,15 @@ namespace Gra_RPG
             // 75% szans na miksturê
             if (random.Next(100) < 75)
             {
-                Item potion = new Item("Mikstura Zdrowia", "Przywraca 50 HP.", 50);
+                Item potion = new Item("Mikstura Zdrowia", "Przywraca 50 HP.", 50, ItemType.HealthPotion);
                 player.AddItem(potion);
                 Console.WriteLine($">>> Otrzymano: {potion.Name} - {potion.Description}");
             }
 
-            // 20% szans na now¹ broñ lub zbrojê
+            // 20% szans na now¹ broñ
             if (random.Next(100) < 20)
             {
-                Item weapon = new Item("Miecz", "Zwiêksza moc ataku.", 10);
+                Item weapon = new Item("Miecz", "Zwiêksza moc ataku.", 10, ItemType.Weapon);
                 player.AddItem(weapon);
                 Console.WriteLine($">>> Otrzymano: {weapon.Name} - {weapon.Description}");
             }
@@ -500,7 +511,7 @@ namespace Gra_RPG
             }
 
             userManager.SaveUsers();
-            Console.WriteLine("\n>>> Zakoñczenie gry. <<<");
+            Console.WriteLine("\n>>> Dziêkujemy za grê! <<<");
         }
     }
 }
