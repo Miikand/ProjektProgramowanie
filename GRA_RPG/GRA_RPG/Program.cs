@@ -315,6 +315,7 @@ namespace Gra_RPG
 
                 // Wy?wietlamy informacj? o awansie
                 Console.WriteLine($"\n>>> {Name} osi?gn?? nowy poziom! Poziom: {Level} <<<");
+                Console.WriteLine($">>> Maksymalne HP: {MaxHP}, Moc ataku: {AttackPower} <<<");
             }
         }
     }
@@ -327,21 +328,43 @@ namespace Gra_RPG
     public class Enemy : Entity
     {
         private static Random random = new Random();
-        private List<string> attackTypes = new List<string> { "Ci?cie", "Ugryzienie", "Taran", "Kula Ognia" };
+
+        // S³ownik ataków dla przeciwników
+        private Dictionary<string, (int minDamage, int maxDamage)> attackTypes;
 
         public Enemy(string name, int level, int maxHP, int attackPower)
-            : base(name, level, maxHP, attackPower) { }
-
-        public void ScaleStats()
+            : base(name, level, maxHP, attackPower)
         {
-            MaxHP = (int)(MaxHP * (1 + 0.01 * Level));  // HP ro?nie o 1% na poziom
-            AttackPower = (int)(AttackPower * (1 + 0.01 * Level));  // Obra?enia rosn? o 1% na poziom
+            // Przypisanie specyficznych ataków do przeciwnika
+            attackTypes = new Dictionary<string, (int, int)>();
         }
 
-        public string GetRandomAttack()
+        // Skalowanie statystyk przeciwnika na podstawie poziomu
+        public void ScaleStats()
         {
-            int index = random.Next(attackTypes.Count);
-            return attackTypes[index];
+            MaxHP = (int)(MaxHP * (1 + 0.01 * Level));  // HP roœnie o 1% na poziom
+            AttackPower = (int)(AttackPower * (1 + 0.01 * Level));  // Obra¿enia rosn¹ o 1% na poziom
+        }
+
+        // Przypisanie ataków do przeciwnika
+        public void SetAttacks(List<(string, int, int)> attacks)
+        {
+            attackTypes.Clear();
+            foreach (var attack in attacks)
+            {
+                attackTypes.Add(attack.Item1, (attack.Item2, attack.Item3));
+            }
+        }
+
+        // Wybór losowego ataku przeciwnika
+        public string GetRandomAttack(out int damage)
+        {
+            // Losowanie ataku
+            var attack = attackTypes.ElementAt(random.Next(attackTypes.Count));
+
+            // Losowanie obra¿eñ dla tego ataku
+            damage = random.Next(attack.Value.minDamage, attack.Value.maxDamage + 1);
+            return attack.Key;
         }
     }
 
@@ -435,60 +458,79 @@ namespace Gra_RPG
 
         public void StartBattle(Character player, Enemy enemy)
         {
-            Console.WriteLine("\n=== Rozpocz?cie walki ===");
+            Console.WriteLine("\n=== Rozpoczêcie walki ===");
+
+            // Dodanie ataków do przeciwnika
+            var attackList = new List<(string, int, int)>
+    {
+        ("Ciêcie", 5, 15),
+        ("Ugryzienie", 3, 10),
+        ("Taran", 8, 20),
+        ("Kula Ognia", 12, 18),
+        ("Podwójny cios", 10, 25),
+        ("Zatrucie", 2, 5),
+        ("Tornado", 15, 25)
+    };
+
+            enemy.SetAttacks(attackList);
+            enemy.ScaleStats();  // Skalowanie statystyk przeciwnika przed ka¿d¹ walk¹
+
+            // Walka
             while (!player.IsDefeated() && !enemy.IsDefeated())
             {
-                enemy.ScaleStats();  // Skalowanie statystyk przeciwnika przed ka?d? walk?
-
                 Console.WriteLine($"\n{player.Name}: {player.HP}/{player.MaxHP} HP");
                 Console.WriteLine($"{enemy.Name}: {enemy.HP}/{enemy.MaxHP} HP");
                 Console.WriteLine("\n1. Atakuj");
-                Console.WriteLine("2. U?yj przedmiotu");
-                Console.Write("Wybierz akcj?: ");
+                Console.WriteLine("2. U¿yj przedmiotu");
+                Console.Write("Wybierz akcjê: ");
 
                 string action = Console.ReadLine()?.Trim();
+                int damage;
+
                 switch (action)
                 {
                     case "1":
                         int playerDamage = random.Next(player.AttackPower - 5, player.AttackPower + 5);
                         enemy.TakeDamage(playerDamage);
-                        Console.WriteLine($"\n>>> Zada?e? {playerDamage} obra?e? przeciwnikowi! <<<");
+                        Console.WriteLine($"\n>>> Zada³eœ {playerDamage} obra¿eñ przeciwnikowi! <<<");
                         break;
                     case "2":
                         player.DisplayInventory();
-                        Console.Write("Wybierz przedmiot do u?ycia (numer): ");
+                        Console.Write("Wybierz przedmiot do u¿ycia (numer): ");
                         if (int.TryParse(Console.ReadLine(), out int itemIndex))
                         {
-                            player.UseItem(itemIndex - 1); // Indeksowanie zaczyna si? od 1, wi?c odejmujemy 1
+                            player.UseItem(itemIndex - 1); // Indeksowanie zaczyna siê od 1, wiêc odejmujemy 1
                         }
                         else
                         {
-                            Console.WriteLine("\n>>> Nieprawid?owy wybór. <<<");
+                            Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
                         }
                         break;
                     default:
-                        Console.WriteLine("\n>>> Nieprawid?owy wybór. <<<");
+                        Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
                         break;
                 }
 
                 if (!enemy.IsDefeated())
                 {
-                    int enemyDamage = random.Next(enemy.AttackPower - 3, enemy.AttackPower + 3);
-                    player.TakeDamage(enemyDamage);
-                    Console.WriteLine($"\n>>> {enemy.Name} zada? {enemyDamage} obra?e?! <<<");
+                    // Losowanie ataku przeciwnika i obra¿eñ
+                    string enemyAttack = enemy.GetRandomAttack(out damage);
+                    player.TakeDamage(damage);
+                    Console.WriteLine($"\n>>> {enemy.Name} u¿y³ ataku: {enemyAttack} i zada³ {damage} obra¿eñ! <<<");
                 }
             }
 
             if (player.IsDefeated())
             {
-                Console.WriteLine("\n>>> Zosta?e? pokonany. <<<");
+                Console.WriteLine("\n>>> Zosta³eœ pokonany. <<<");
             }
             else
             {
-                Console.WriteLine("\n>>> Pokona?e? przeciwnika! <<<");
-                player.GainExperience(50);  // Dodawanie do?wiadczenia po wygranej walce
+                Console.WriteLine("\n>>> Pokona³eœ przeciwnika! <<<");
+                player.GainExperience(50);  // Dodawanie doœwiadczenia po wygranej walce
             }
         }
+
 
         public void RewardPlayer(Character player)
         {
@@ -515,80 +557,139 @@ namespace Gra_RPG
     // Klasa g?ówna gry
     class Program
     {
-        class Program
+        static void Main(string[] args)
         {
-            static void Main(string[] args)
+            UserManager userManager = new UserManager();
+            userManager.LoadUsers();
+            Menu menu = new Menu();
+            User currentUser = null;
+            Character player = null;
+            bool loggedIn = false;
+            bool exit = false;
+
+            while (!exit)
             {
-                UserManager userManager = new UserManager();
-                userManager.LoadUsers();
-                Menu menu = new Menu();
-                User currentUser = null;
-                Character player = null;
-                bool loggedIn = false;
-                bool exit = false;
-
-                while (!exit)
+                if (!loggedIn)
                 {
-                    if (!loggedIn)
-                    {
-                        menu.ShowAuthMenu();
-                        string choice = Console.ReadLine()?.Trim();
+                    menu.ShowAuthMenu();
+                    string choice = Console.ReadLine()?.Trim();
 
-                        switch (choice)
-                        {
-                            case "1":
-                                userManager.RegisterUser();
-                                break;
-                            case "2":
-                                currentUser = userManager.LoginUser();
-                                if (currentUser != null)
-                                {
-                                    loggedIn = true;
-                                    Console.WriteLine($"\n>>> Zalogowano jako: {currentUser.Username} <<<\n");
-                                    player = menu.CreateCharacter();
-                                    menu.ShowTutorial();  // Wywo³anie tutorialu po utworzeniu postaci
-                                }
-                                break;
-                            case "3":
-                                exit = true;
-                                break;
-                            default:
-                                Console.WriteLine("\n>>> Nieprawid?owy wybór. <<<");
-                                break;
-                        }
-                    }
-                    else
+                    switch (choice)
                     {
-                        menu.ShowMainMenu();
-                        string choice = Console.ReadLine()?.Trim();
-
-                        switch (choice)
-                        {
-                            case "1":
-                                var enemy = new Enemy("Ork", 1, 50, 10);
-                                var game = new Game();
-                                game.StartBattle(player, enemy);
-                                game.RewardPlayer(player);
-                                break;
-                            case "2":
-                                menu.ShowInventoryMenu(player);
-                                break;
-                            case "3":
-                                loggedIn = false;
-                                Console.WriteLine("\n>>> Wylogowano. <<<");
-                                break;
-                            case "4":
-                                exit = true;
-                                break;
-                            default:
-                                Console.WriteLine("\n>>> Nieprawid?owy wybór. <<<");
-                                break;
-                        }
+                        case "1":
+                            userManager.RegisterUser();
+                            break;
+                        case "2":
+                            currentUser = userManager.LoginUser();
+                            if (currentUser != null)
+                            {
+                                loggedIn = true;
+                                Console.WriteLine($"\n>>> Zalogowano jako: {currentUser.Username} <<<\n");
+                                player = menu.CreateCharacter();
+                                menu.ShowTutorial();  // Wywo³anie tutorialu po utworzeniu postaci
+                            }
+                            break;
+                        case "3":
+                            exit = true;
+                            break;
+                        default:
+                            Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
+                            break;
                     }
                 }
+                else
+                {
+                    menu.ShowMainMenu();
+                    string choice = Console.ReadLine()?.Trim();
 
-                userManager.SaveUsers();
+                    switch (choice)
+                    {
+                        case "1":
+                            // Tworzenie przeciwników z unikalnymi atakami
+                            var enemy1 = new Enemy("Goblin", 1, 50, 10);
+                            var goblinAttacks = new List<(string, int, int)>
+                        {
+                            ("Sztylet", 5, 12),
+                            ("Skradzione ¿ycie", 2, 6)
+                        };
+                            enemy1.SetAttacks(goblinAttacks);
+
+                            var enemy2 = new Enemy("Ork", 2, 70, 15);
+                            var orkAttacks = new List<(string, int, int)>
+                        {
+                            ("M³ot", 8, 15),
+                            ("Rage", 10, 20)
+                        };
+                            enemy2.SetAttacks(orkAttacks);
+
+                            var enemy3 = new Enemy("Smok", 5, 150, 30);
+                            var smokAttacks = new List<(string, int, int)>
+                        {
+                            ("Ognisty podmuch", 20, 40),
+                            ("Skrzyd³a", 10, 30)
+                        };
+                            enemy3.SetAttacks(smokAttacks);
+
+                            var enemy4 = new Enemy("Wampir", 3, 80, 20);
+                            var wampirAttacks = new List<(string, int, int)>
+                        {
+                            ("Uk¹szenie", 15, 25),
+                            ("Czarny Mrok", 10, 20)
+                        };
+                            enemy4.SetAttacks(wampirAttacks);
+
+                            // Wybór przeciwnika do walki
+                            Console.WriteLine("Wybierz przeciwnika do walki:");
+                            Console.WriteLine("1. Goblin");
+                            Console.WriteLine("2. Ork");
+                            Console.WriteLine("3. Smok");
+                            Console.WriteLine("4. Wampir");
+                            Console.Write("Wybierz opcjê: ");
+                            string enemyChoice = Console.ReadLine()?.Trim();
+                            Enemy selectedEnemy = null;
+
+                            switch (enemyChoice)
+                            {
+                                case "1":
+                                    selectedEnemy = enemy1;
+                                    break;
+                                case "2":
+                                    selectedEnemy = enemy2;
+                                    break;
+                                case "3":
+                                    selectedEnemy = enemy3;
+                                    break;
+                                case "4":
+                                    selectedEnemy = enemy4;
+                                    break;
+                                default:
+                                    Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
+                                    continue; // Powrót do g³ównego menu
+                            }
+
+                            var game = new Game();
+                            game.StartBattle(player, selectedEnemy);
+                            game.RewardPlayer(player);
+                            break;
+                        case "2":
+                            menu.ShowInventoryMenu(player);
+                            break;
+                        case "3":
+                            loggedIn = false;
+                            Console.WriteLine("\n>>> Wylogowano. <<<");
+                            break;
+                        case "4":
+                            exit = true;
+                            break;
+                        default:
+                            Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
+                            break;
+                    }
+                }
             }
-        }
 
+            userManager.SaveUsers();
+        }
     }
+
+}
