@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace Gra_RPG
@@ -7,18 +8,26 @@ namespace Gra_RPG
     // === KLASY ===
 
     // Klasa przechowuj¹ca postêp u¿ytkownika (poziom i doœwiadczenie)
+    // Klasa przechowuj¹ca postêp u¿ytkownika (poziom i doœwiadczenie)
     public class UserProgress
     {
         public int Level { get; set; } = 1;
         public int Experience { get; set; } = 0;
+
+        public void LevelUp()
+        {
+            Level++;
+            Experience = 0;  // Resetujemy doœwiadczenie po awansie na wy¿szy poziom
+        }
     }
+
 
     // Klasa reprezentuj¹ca u¿ytkownika
     public class User
     {
         public string Username { get; set; }
         public string Password { get; set; }
-        public UserProgress Progress { get; set; }
+        public UserProgress Progress { get; set; }  // Poprawiona referencja do UserProgress, a nie ogólnego typu
 
         public User(string username, string password)
         {
@@ -27,6 +36,7 @@ namespace Gra_RPG
             Progress = new UserProgress();
         }
     }
+
 
     // Klasa zarz¹dzaj¹ca u¿ytkownikami, logowaniem i rejestracj¹
     public class UserManager
@@ -203,6 +213,7 @@ namespace Gra_RPG
             if (HP < 0) HP = 0;
         }
 
+
         public bool IsDefeated()
         {
             return HP <= 0;
@@ -257,13 +268,15 @@ namespace Gra_RPG
     public class Character : Entity
     {
         public string Class { get; set; }
-        public int Experience { get; private set; }
+        public int Experience { get; set; }
+        public int Level { get; set; }
 
         public Character(string name, string charClass)
             : base(name, 1, 100, 10)
         {
             Class = charClass;
             Experience = 0;
+            Level = 1;
 
             switch (Class.ToLower())
             {
@@ -285,7 +298,30 @@ namespace Gra_RPG
 
             HP = MaxHP;
         }
+
+        public void GainExperience(int experiencePoints)
+        {
+            Experience += experiencePoints;
+
+            // Sprawdzamy, czy doœwiadczenie przekroczy³o 100, co powoduje awans na poziom
+            while (Experience >= 100)
+            {
+                Experience -= 100; // Zmniejszamy doœwiadczenie o 100
+                Level++;  // Zwiêkszamy poziom postaci
+
+                // Zwiêkszenie HP i obra¿eñ o 1% na ka¿dym poziomie
+                MaxHP = (int)(MaxHP * 1.01);
+                AttackPower = (int)(AttackPower * 1.01);
+
+                // Wyœwietlamy informacjê o awansie
+                Console.WriteLine($"\n>>> {Name} osi¹gn¹³ nowy poziom! Poziom: {Level} <<<");
+            }
+        }
     }
+
+
+
+
 
     // Klasa reprezentuj¹ca przeciwnika
     public class Enemy : Entity
@@ -295,6 +331,12 @@ namespace Gra_RPG
 
         public Enemy(string name, int level, int maxHP, int attackPower)
             : base(name, level, maxHP, attackPower) { }
+
+        public void ScaleStats()
+        {
+            MaxHP = (int)(MaxHP * (1 + 0.01 * Level));  // HP roœnie o 1% na poziom
+            AttackPower = (int)(AttackPower * (1 + 0.01 * Level));  // Obra¿enia rosn¹ o 1% na poziom
+        }
 
         public string GetRandomAttack()
         {
@@ -323,6 +365,27 @@ namespace Gra_RPG
             Console.WriteLine("3. Wyloguj siê");
             Console.WriteLine("4. WyjdŸ z gry");
             Console.Write("Wybierz opcjê: ");
+        }
+
+        public void ShowInventoryMenu(Character player)
+        {
+            Console.WriteLine("\n=== Ekwipunek ===");
+            player.DisplayInventory();
+            Console.WriteLine("\nWybierz przedmiot do u¿ycia lub naciœnij '0' aby wróciæ:");
+            string choice = Console.ReadLine()?.Trim();
+
+            if (int.TryParse(choice, out int itemIndex) && itemIndex > 0 && itemIndex <= player.Inventory.Count)
+            {
+                player.UseItem(itemIndex - 1); // Indeksowanie zaczyna siê od 1, wiêc odejmujemy 1
+            }
+            else if (choice == "0")
+            {
+                return; // Wraca do g³ównego menu
+            }
+            else
+            {
+                Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
+            }
         }
 
         public Character CreateCharacter()
@@ -361,6 +424,8 @@ namespace Gra_RPG
             Console.WriteLine("\n=== Rozpoczêcie walki ===");
             while (!player.IsDefeated() && !enemy.IsDefeated())
             {
+                enemy.ScaleStats();  // Skalowanie statystyk przeciwnika przed ka¿d¹ walk¹
+
                 Console.WriteLine($"\n{player.Name}: {player.HP}/{player.MaxHP} HP");
                 Console.WriteLine($"{enemy.Name}: {enemy.HP}/{enemy.MaxHP} HP");
                 Console.WriteLine("\n1. Atakuj");
@@ -407,6 +472,7 @@ namespace Gra_RPG
             else
             {
                 Console.WriteLine("\n>>> Pokona³eœ przeciwnika! <<<");
+                player.GainExperience(50);  // Dodawanie doœwiadczenia po wygranej walce
             }
         }
 
@@ -462,15 +528,15 @@ namespace Gra_RPG
                             if (currentUser != null)
                             {
                                 loggedIn = true;
-                                Console.WriteLine($"\n>>> Witaj, {currentUser.Username}! <<<\n");
-                                player = menu.CreateCharacter(); // Tworzenie nowej postaci
+                                Console.WriteLine($"\n>>> Zalogowano jako: {currentUser.Username} <<<\n");
+                                player = menu.CreateCharacter();
                             }
                             break;
                         case "3":
                             exit = true;
                             break;
                         default:
-                            Console.WriteLine("\n>>> Nieprawid³owy wybór. Spróbuj ponownie. <<<");
+                            Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
                             break;
                     }
                 }
@@ -482,36 +548,29 @@ namespace Gra_RPG
                     switch (choice)
                     {
                         case "1":
-                            Enemy enemy = new Enemy("Ork", 1, 50, 12);
-                            Game game = new Game();
+                            var enemy = new Enemy("Ork", 1, 50, 10);
+                            var game = new Game();
                             game.StartBattle(player, enemy);
-                            game.RewardPlayer(player); // Nagradzanie po walce
+                            game.RewardPlayer(player);
                             break;
                         case "2":
-                            player.DisplayInventory();
-                            Console.Write("Wybierz przedmiot do u¿ycia (numer): ");
-                            if (int.TryParse(Console.ReadLine(), out int itemIndex))
-                            {
-                                player.UseItem(itemIndex - 1); // Indeksowanie zaczyna siê od 1, wiêc odejmujemy 1
-                            }
+                            menu.ShowInventoryMenu(player);
                             break;
                         case "3":
                             loggedIn = false;
-                            currentUser = null;
-                            player = null;
+                            Console.WriteLine("\n>>> Wylogowano. <<<");
                             break;
                         case "4":
                             exit = true;
                             break;
                         default:
-                            Console.WriteLine("\n>>> Nieprawid³owy wybór. Spróbuj ponownie. <<<");
+                            Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
                             break;
                     }
                 }
             }
 
             userManager.SaveUsers();
-            Console.WriteLine("\n>>> Dziêkujemy za grê! <<<");
         }
     }
 }
