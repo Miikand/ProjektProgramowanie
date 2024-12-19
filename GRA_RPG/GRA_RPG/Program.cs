@@ -342,8 +342,8 @@ namespace Gra_RPG
         // Skalowanie statystyk przeciwnika na podstawie poziomu
         public void ScaleStats()
         {
-            MaxHP = (int)(MaxHP * (1 + 0.01 * Level));  // HP roœnie o 1% na poziom
-            AttackPower = (int)(AttackPower * (1 + 0.01 * Level));  // Obra¿enia rosn¹ o 1% na poziom
+            MaxHP = (int)(MaxHP * (1 + 0.1 * Level));  // HP roœnie o 1% na poziom
+            AttackPower = (int)(AttackPower * (1 + 0.1 * Level));  // Obra¿enia rosn¹ o 1% na poziom
         }
 
         // Przypisanie ataków do przeciwnika
@@ -460,20 +460,8 @@ namespace Gra_RPG
         {
             Console.WriteLine("\n=== Rozpoczêcie walki ===");
 
-            // Dodanie ataków do przeciwnika
-            var attackList = new List<(string, int, int)>
-    {
-        ("Ciêcie", 5, 15),
-        ("Ugryzienie", 3, 10),
-        ("Taran", 8, 20),
-        ("Kula Ognia", 12, 18),
-        ("Podwójny cios", 10, 25),
-        ("Zatrucie", 2, 5),
-        ("Tornado", 15, 25)
-    };
-
-            enemy.SetAttacks(attackList);
-            enemy.ScaleStats();  // Skalowanie statystyk przeciwnika przed ka¿d¹ walk¹
+            // Skalowanie statystyk przeciwnika przed ka¿d¹ walk¹
+            enemy.ScaleStats();
 
             // Walka
             while (!player.IsDefeated() && !enemy.IsDefeated())
@@ -531,8 +519,7 @@ namespace Gra_RPG
             }
         }
 
-
-        public void RewardPlayer(Character player)
+            public void RewardPlayer(Character player)
         {
             Console.WriteLine("\n=== ?upy po walce ===");
 
@@ -662,7 +649,7 @@ namespace Gra_RPG
                         };
                             enemy7.SetAttacks(czarodziejAttacks);
 
-                            var enemy8 = new Enemy("minotaur", 5, 105, 33);
+                            var enemy8 = new Enemy("minotaur", 8, 250, 45);
                             var minotaurAttacks = new List<(string, int, int)>
                         {
                                 ("Rogaty atak", 23, 33),
@@ -670,11 +657,11 @@ namespace Gra_RPG
                         };
                             enemy8.SetAttacks(minotaurAttacks);
 
-                            var enemy9 = new Enemy("demon", 3, 300, 35);
+                            var enemy9 = new Enemy("demon", 9, 500, 50);
                             var demonAttacks = new List<(string, int, int)>
                         {
-                                  ("Ognisty wybuch", 28, 40),
-                                ("Cios piekielny", 30, 35)
+                                  ("Ognisty wybuch", 30, 120),
+                                ("Cios piekielny", 40, 110)
                         };
                             enemy9.SetAttacks(demonAttacks);
 
