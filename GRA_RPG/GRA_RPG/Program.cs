@@ -622,7 +622,7 @@ namespace Gra_RPG
                         };
                             enemy2.SetAttacks(orkAttacks);
 
-                            var enemy3 = new Enemy("Smok", 5, 150, 30);
+                            var enemy3 = new Enemy("Smok", 3, 150, 30);
                             var smokAttacks = new List<(string, int, int)>
                         {
                             ("Ognisty podmuch", 20, 40),
@@ -630,7 +630,7 @@ namespace Gra_RPG
                         };
                             enemy3.SetAttacks(smokAttacks);
 
-                            var enemy4 = new Enemy("Wampir", 3, 80, 20);
+                            var enemy4 = new Enemy("Wampir", 4, 80, 20);
                             var wampirAttacks = new List<(string, int, int)>
                         {
                             ("Uk¹szenie", 15, 25),
@@ -638,12 +638,61 @@ namespace Gra_RPG
                         };
                             enemy4.SetAttacks(wampirAttacks);
 
+                            var enemy5 = new Enemy("Szkielet", 5, 90, 25);
+                            var szkieletAttacks = new List<(string, int, int)>
+                        {
+                                ("Strza³ z ³uku", 17, 27),
+                                ("Cios mieczem", 12, 22)
+                        };
+                            enemy5.SetAttacks(szkieletAttacks);
+
+                            var enemy6 = new Enemy("Zombiak", 6, 95, 27);
+                            var zombieAttacks = new List<(string, int, int)>
+                        {
+                                ("Uderzenie", 19, 29),
+                                ("Zara¿enie", 15, 25)
+                        };
+                            enemy6.SetAttacks(szkieletAttacks);
+
+                            var enemy7 = new Enemy("Czarodziej", 7, 100, 30);
+                            var czarodziejAttacks = new List<(string, int, int)>
+                        {
+                                 ("Kula Ognia", 21, 31),
+                                   ("Zamro¿enie", 17, 27)
+                        };
+                            enemy7.SetAttacks(czarodziejAttacks);
+
+                            var enemy8 = new Enemy("minotaur", 5, 105, 33);
+                            var minotaurAttacks = new List<(string, int, int)>
+                        {
+                                ("Rogaty atak", 23, 33),
+                                ("Szalony bieg", 19, 30)
+                        };
+                            enemy8.SetAttacks(minotaurAttacks);
+
+                            var enemy9 = new Enemy("demon", 3, 300, 35);
+                            var demonAttacks = new List<(string, int, int)>
+                        {
+                                  ("Ognisty wybuch", 28, 40),
+                                ("Cios piekielny", 30, 35)
+                        };
+                            enemy9.SetAttacks(demonAttacks);
+
+                            
+
+
+
                             // Wybór przeciwnika do walki
                             Console.WriteLine("Wybierz przeciwnika do walki:");
                             Console.WriteLine("1. Goblin");
                             Console.WriteLine("2. Ork");
                             Console.WriteLine("3. Smok");
                             Console.WriteLine("4. Wampir");
+                            Console.WriteLine("5. Szkielet");
+                            Console.WriteLine("6. Zombiak");
+                            Console.WriteLine("7. Czarodziej");
+                            Console.WriteLine("8. Minotaur");
+                            Console.WriteLine("9. Demon");
                             Console.Write("Wybierz opcjê: ");
                             string enemyChoice = Console.ReadLine()?.Trim();
                             Enemy selectedEnemy = null;
@@ -661,6 +710,21 @@ namespace Gra_RPG
                                     break;
                                 case "4":
                                     selectedEnemy = enemy4;
+                                    break;
+                                case "5":
+                                    selectedEnemy = enemy5;
+                                    break;
+                                case "6":
+                                    selectedEnemy = enemy6;
+                                    break;
+                                case "7":
+                                    selectedEnemy = enemy7;
+                                    break;
+                                case "8":
+                                    selectedEnemy = enemy8;
+                                    break;
+                                case "9":
+                                    selectedEnemy = enemy9;
                                     break;
                                 default:
                                     Console.WriteLine("\n>>> Nieprawid³owy wybór. <<<");
