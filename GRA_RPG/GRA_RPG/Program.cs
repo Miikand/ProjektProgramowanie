@@ -8,7 +8,6 @@ namespace Gra_RPG
     // === KLASY ===
 
     // Klasa przechowuj?ca post?p u?ytkownika (poziom i do?wiadczenie)
-    // Klasa przechowuj?ca post?p u?ytkownika (poziom i do?wiadczenie)
     public class UserProgress
     {
         public int Level { get; set; } = 1;
@@ -262,6 +261,12 @@ namespace Gra_RPG
                 Inventory.RemoveAt(index); // Usu? przedmiot po u?yciu
             }
         }
+
+        // Polimorficzna metoda specjalna zdolnoœci
+        public virtual void SpecialAbility()
+        {
+            Console.WriteLine($"{Name} u¿ywa podstawowej zdolnoœci.");
+        }
     }
 
     // Klasa reprezentuj?ca posta? gracza
@@ -269,7 +274,7 @@ namespace Gra_RPG
     {
         public string Class { get; set; }
         public int Experience { get; set; }
-        public int Level { get; set; }
+        public new int Level { get; set; }
 
         public Character(string name, string charClass)
             : base(name, 1, 100, 10)
@@ -320,6 +325,25 @@ namespace Gra_RPG
         }
     }
 
+    // Polimorficzne podklasy dla postaci gracza
+    public class Mage : Character
+    {
+        public Mage(string name) : base(name, "mag") { }
+        public override void SpecialAbility() => Console.WriteLine($"{Name} rzuca potê¿ny czar obszarowy!");
+    }
+
+    public class Archer : Character
+    {
+        public Archer(string name) : base(name, "?ucznik") { }
+        public override void SpecialAbility() => Console.WriteLine($"{Name} wypuszcza deszcz strza³!");
+    }
+
+    public class Warrior : Character
+    {
+        public Warrior(string name) : base(name, "wojownik") { }
+        public override void SpecialAbility() => Console.WriteLine($"{Name} wykonuje potê¿ne uderzenie tarcz¹!");
+    }
+
 
 
 
@@ -327,10 +351,10 @@ namespace Gra_RPG
     // Klasa reprezentuj?ca przeciwnika
     public class Enemy : Entity
     {
-        private static Random random = new Random();
+        protected static Random random = new Random();
 
         // S³ownik ataków dla przeciwników
-        private Dictionary<string, (int minDamage, int maxDamage)> attackTypes;
+        protected Dictionary<string, (int minDamage, int maxDamage)> attackTypes;
 
         public Enemy(string name, int level, int maxHP, int attackPower)
             : base(name, level, maxHP, attackPower)
@@ -356,16 +380,42 @@ namespace Gra_RPG
             }
         }
 
-        // Wybór losowego ataku przeciwnika
-        public string GetRandomAttack(out int damage)
+        // Polimorficzny wybór losowego ataku przeciwnika
+        public virtual string GetRandomAttack(out int damage)
         {
-            // Losowanie ataku
+            if (attackTypes.Count == 0)
+            {
+                damage = 5;
+                return "Zwyk³y cios";
+            }
             var attack = attackTypes.ElementAt(random.Next(attackTypes.Count));
-
-            // Losowanie obra¿eñ dla tego ataku
             damage = random.Next(attack.Value.minDamage, attack.Value.maxDamage + 1);
             return attack.Key;
         }
+    }
+
+    // Polimorficzne klasy przeciwników
+    public class Goblin : Enemy
+    {
+        public Goblin() : base("Goblin", 1, 50, 10)
+        {
+            SetAttacks(new List<(string, int, int)> { ("Sztylet", 5, 12), ("Skradzione ¿ycie", 2, 6) });
+        }
+        public override string GetRandomAttack(out int damage)
+        {
+            string atk = base.GetRandomAttack(out damage);
+            damage += 2; // Goblin zadaje bonusowe obra¿enia z zaskoczenia
+            return atk + " (Chytry atak)";
+        }
+    }
+
+    public class Dragon : Enemy
+    {
+        public Dragon() : base("Smok", 3, 150, 30)
+        {
+            SetAttacks(new List<(string, int, int)> { ("Ognisty podmuch", 20, 40), ("Skrzyd³a", 10, 30) });
+        }
+        public override void SpecialAbility() => Console.WriteLine($"{Name} zieje potê¿nym ogniem na ca³¹ planszê!");
     }
 
     // Klasa odpowiedzialna za wy?wietlanie menu
@@ -438,16 +488,18 @@ namespace Gra_RPG
             Console.Write("Wybierz opcj?: ");
 
             string classChoice = Console.ReadLine()?.Trim();
-            string charClass = classChoice switch
+
+            // U¿ycie polimorfizmu przy tworzeniu instancji obiektów klasy pochodnej
+            Character newCharacter = classChoice switch
             {
-                "1" => "mag",
-                "2" => "?ucznik",
-                "3" => "wojownik",
+                "1" => new Mage(name),
+                "2" => new Archer(name),
+                "3" => new Warrior(name),
                 _ => throw new ArgumentException("Nieprawid?owy wybór klasy postaci")
             };
 
-            Console.WriteLine($"\n>>> Utworzono posta?: {name}, Klasa: {charClass} <<<\n");
-            return new Character(name, charClass);
+            Console.WriteLine($"\n>>> Utworzono posta?: {name}, Klasa: {newCharacter.Class} <<<\n");
+            return newCharacter;
         }
     }
 
@@ -460,19 +512,40 @@ namespace Gra_RPG
         {
             Console.WriteLine("\n=== Rozpoczêcie walki ===");
 
-            // Dodanie ataków do przeciwnika
-            var attackList = new List<(string, int, int)>
-    {
-        ("Ciêcie", 5, 15),
-        ("Ugryzienie", 3, 10),
-        ("Taran", 8, 20),
-        ("Kula Ognia", 12, 18),
-        ("Podwójny cios", 10, 25),
-        ("Zatrucie", 2, 5),
-        ("Tornado", 15, 25)
-    };
+            // Polimorficzne u¿ycie metody specjalnej jeœli istnieje
+            player.SpecialAbility();
+            enemy.SpecialAbility();
 
-            enemy.SetAttacks(attackList);
+            // Upewniamy siê, ¿e przeciwnik ma zdefiniowane ataki, jeœli nie pochodzi ze specjalnej klasy
+            if (enemy.Name == "Ork")
+            {
+                enemy.SetAttacks(new List<(string, int, int)> { ("M³ot", 8, 15), ("Rage", 10, 20) });
+            }
+            else if (enemy.Name == "Wampir")
+            {
+                enemy.SetAttacks(new List<(string, int, int)> { ("Uk¹szenie", 15, 25), ("Czarny Mrok", 10, 20) });
+            }
+            else if (enemy.Name == "Szkielet")
+            {
+                enemy.SetAttacks(new List<(string, int, int)> { ("Strza³ z ³uku", 17, 27), ("Cios mieczem", 12, 22) });
+            }
+            else if (enemy.Name == "Zombiak")
+            {
+                enemy.SetAttacks(new List<(string, int, int)> { ("Uderzenie", 19, 29), ("Zara¿enie", 15, 25) });
+            }
+            else if (enemy.Name == "Czarodziej")
+            {
+                enemy.SetAttacks(new List<(string, int, int)> { ("Kula Ognia", 21, 31), ("Zamro¿enie", 17, 27) });
+            }
+            else if (enemy.Name == "minotaur")
+            {
+                enemy.SetAttacks(new List<(string, int, int)> { ("Rogaty atak", 23, 33), ("Szalony bieg", 19, 30) });
+            }
+            else if (enemy.Name == "demon")
+            {
+                enemy.SetAttacks(new List<(string, int, int)> { ("Ognisty wybuch", 28, 40), ("Cios piekielny", 30, 35) });
+            }
+
             enemy.ScaleStats();  // Skalowanie statystyk przeciwnika przed ka¿d¹ walk¹
 
             // Walka
@@ -513,7 +586,7 @@ namespace Gra_RPG
 
                 if (!enemy.IsDefeated())
                 {
-                    // Losowanie ataku przeciwnika i obra¿eñ
+                    // Polimorficzne wywo³anie ataku przeciwnika
                     string enemyAttack = enemy.GetRandomAttack(out damage);
                     player.TakeDamage(damage);
                     Console.WriteLine($"\n>>> {enemy.Name} u¿y³ ataku: {enemyAttack} i zada³ {damage} obra¿eñ! <<<");
@@ -605,82 +678,16 @@ namespace Gra_RPG
                     switch (choice)
                     {
                         case "1":
-                            // Tworzenie przeciwników z unikalnymi atakami
-                            var enemy1 = new Enemy("Goblin", 1, 50, 10);
-                            var goblinAttacks = new List<(string, int, int)>
-                        {
-                            ("Sztylet", 5, 12),
-                            ("Skradzione ¿ycie", 2, 6)
-                        };
-                            enemy1.SetAttacks(goblinAttacks);
-
+                            // Polimorficzne obiekty przeciwników
+                            Enemy enemy1 = new Goblin();
                             var enemy2 = new Enemy("Ork", 2, 70, 15);
-                            var orkAttacks = new List<(string, int, int)>
-                        {
-                            ("M³ot", 8, 15),
-                            ("Rage", 10, 20)
-                        };
-                            enemy2.SetAttacks(orkAttacks);
-
-                            var enemy3 = new Enemy("Smok", 3, 150, 30);
-                            var smokAttacks = new List<(string, int, int)>
-                        {
-                            ("Ognisty podmuch", 20, 40),
-                            ("Skrzyd³a", 10, 30)
-                        };
-                            enemy3.SetAttacks(smokAttacks);
-
+                            Enemy enemy3 = new Dragon();
                             var enemy4 = new Enemy("Wampir", 4, 80, 20);
-                            var wampirAttacks = new List<(string, int, int)>
-                        {
-                            ("Uk¹szenie", 15, 25),
-                            ("Czarny Mrok", 10, 20)
-                        };
-                            enemy4.SetAttacks(wampirAttacks);
-
                             var enemy5 = new Enemy("Szkielet", 5, 90, 25);
-                            var szkieletAttacks = new List<(string, int, int)>
-                        {
-                                ("Strza³ z ³uku", 17, 27),
-                                ("Cios mieczem", 12, 22)
-                        };
-                            enemy5.SetAttacks(szkieletAttacks);
-
                             var enemy6 = new Enemy("Zombiak", 6, 95, 27);
-                            var zombieAttacks = new List<(string, int, int)>
-                        {
-                                ("Uderzenie", 19, 29),
-                                ("Zara¿enie", 15, 25)
-                        };
-                            enemy6.SetAttacks(szkieletAttacks);
-
                             var enemy7 = new Enemy("Czarodziej", 7, 100, 30);
-                            var czarodziejAttacks = new List<(string, int, int)>
-                        {
-                                 ("Kula Ognia", 21, 31),
-                                   ("Zamro¿enie", 17, 27)
-                        };
-                            enemy7.SetAttacks(czarodziejAttacks);
-
                             var enemy8 = new Enemy("minotaur", 5, 105, 33);
-                            var minotaurAttacks = new List<(string, int, int)>
-                        {
-                                ("Rogaty atak", 23, 33),
-                                ("Szalony bieg", 19, 30)
-                        };
-                            enemy8.SetAttacks(minotaurAttacks);
-
                             var enemy9 = new Enemy("demon", 3, 300, 35);
-                            var demonAttacks = new List<(string, int, int)>
-                        {
-                                  ("Ognisty wybuch", 28, 40),
-                                ("Cios piekielny", 30, 35)
-                        };
-                            enemy9.SetAttacks(demonAttacks);
-
-                            
-
-
 
                             // Wybór przeciwnika do walki
                             Console.WriteLine("Wybierz przeciwnika do walki:");
@@ -755,5 +762,4 @@ namespace Gra_RPG
             userManager.SaveUsers();
         }
     }
-
 }
