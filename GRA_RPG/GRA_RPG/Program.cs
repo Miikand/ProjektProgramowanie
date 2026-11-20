@@ -27,7 +27,7 @@ namespace Gra_RPG
     {
         public string Username { get; set; }
         public string Password { get; set; }
-        public UserProgress Progress { get; set; }  // Poprawiona referencja do UserProgress, a nie ogÛlnego typu
+        public UserProgress Progress { get; set; }  // Poprawiona referencja do UserProgress, a nie og√≥lnego typu
 
         public User(string username, string password)
         {
@@ -113,7 +113,7 @@ namespace Gra_RPG
                         writer.WriteLine($"{user.Username}|{user.Password}|{user.Progress.Level}|{user.Progress.Experience}");
                     }
                 }
-                Console.WriteLine("\n>>> Dane u?ytkownikÛw zapisano. <<<\n");
+                Console.WriteLine("\n>>> Dane u?ytkownik√≥w zapisano. <<<\n");
             }
             catch (Exception ex)
             {
@@ -153,7 +153,7 @@ namespace Gra_RPG
                             }
                         }
                     }
-                    Console.WriteLine("\n>>> Dane u?ytkownikÛw wczytano. <<<\n");
+                    Console.WriteLine("\n>>> Dane u?ytkownik√≥w wczytano. <<<\n");
                 }
                 catch (Exception ex)
                 {
@@ -180,14 +180,14 @@ namespace Gra_RPG
         }
     }
 
-    // Typy przedmiotÛw
+    // Typy przedmiot√≥w
     public enum ItemType
     {
         Weapon,
         HealthPotion
     }
 
-    // Klasa bazowa dla postaci i przeciwnikÛw
+    // Klasa bazowa dla postaci i przeciwnik√≥w
     public abstract class Entity
     {
         public string Name { get; set; }
@@ -229,7 +229,7 @@ namespace Gra_RPG
             Console.WriteLine($"\n=== Ekwipunek {Name} ===");
             if (Inventory.Count == 0)
             {
-                Console.WriteLine("Brak przedmiotÛw w ekwipunku.");
+                Console.WriteLine("Brak przedmiot√≥w w ekwipunku.");
                 return;
             }
 
@@ -244,7 +244,7 @@ namespace Gra_RPG
         {
             if (index < 0 || index >= Inventory.Count)
             {
-                Console.WriteLine("\n>>> Nieprawid?owy wybÛr. <<<");
+                Console.WriteLine("\n>>> Nieprawid?owy wyb√≥r. <<<");
                 return;
             }
 
@@ -329,24 +329,24 @@ namespace Gra_RPG
     {
         private static Random random = new Random();
 
-        // S≥ownik atakÛw dla przeciwnikÛw
+        // S≈Çownik atak√≥w dla przeciwnik√≥w
         private Dictionary<string, (int minDamage, int maxDamage)> attackTypes;
 
         public Enemy(string name, int level, int maxHP, int attackPower)
             : base(name, level, maxHP, attackPower)
         {
-            // Przypisanie specyficznych atakÛw do przeciwnika
+            // Przypisanie specyficznych atak√≥w do przeciwnika
             attackTypes = new Dictionary<string, (int, int)>();
         }
 
         // Skalowanie statystyk przeciwnika na podstawie poziomu
         public void ScaleStats()
         {
-            MaxHP = (int)(MaxHP * (1 + 0.01 * Level));  // HP roúnie o 1% na poziom
-            AttackPower = (int)(AttackPower * (1 + 0.01 * Level));  // Obraøenia rosnπ o 1% na poziom
+            MaxHP = (int)(MaxHP * (1 + 0.01 * Level));  // HP ro≈õnie o 1% na poziom
+            AttackPower = (int)(AttackPower * (1 + 0.01 * Level));  // Obra≈ºenia rosnƒÖ o 1% na poziom
         }
 
-        // Przypisanie atakÛw do przeciwnika
+        // Przypisanie atak√≥w do przeciwnika
         public void SetAttacks(List<(string, int, int)> attacks)
         {
             attackTypes.Clear();
@@ -356,13 +356,13 @@ namespace Gra_RPG
             }
         }
 
-        // WybÛr losowego ataku przeciwnika
+        // Wyb√≥r losowego ataku przeciwnika
         public string GetRandomAttack(out int damage)
         {
             // Losowanie ataku
             var attack = attackTypes.ElementAt(random.Next(attackTypes.Count));
 
-            // Losowanie obraøeÒ dla tego ataku
+            // Losowanie obra≈ºe≈Ñ dla tego ataku
             damage = random.Next(attack.Value.minDamage, attack.Value.maxDamage + 1);
             return attack.Key;
         }
@@ -375,14 +375,14 @@ namespace Gra_RPG
         {
             Console.WriteLine("\n=== Tutorial dla nowego gracza ===");
             Console.WriteLine("Witaj w grze RPG!");
-            Console.WriteLine("Twoim celem jest walka z potworami, zdobywanie doúwiadczenia i przedmiotÛw.");
-            Console.WriteLine("Oto kilka waønych informacji:");
-            Console.WriteLine("1. Walczysz, aby zdobywaÊ doúwiadczenie i podnosiÊ poziom postaci.");
-            Console.WriteLine("2. W ekwipunku znajdziesz mikstury zdrowia i broÒ, ktÛre pomogπ Ci w walce.");
-            Console.WriteLine("3. PamiÍtaj, aby zarzπdzaÊ ekwipunkiem i uøywaÊ przedmiotÛw w odpowiednich momentach.");
-            Console.WriteLine("4. Po wygranej walce moøesz zdobyÊ nagrody, takie jak nowe przedmioty.");
-            Console.WriteLine("\nPowodzenia w grze! Rozpocznij swojπ przygodÍ!");
-            Console.WriteLine("\nNaciúnij dowolny klawisz, aby kontynuowaÊ...");
+            Console.WriteLine("Twoim celem jest walka z potworami, zdobywanie do≈õwiadczenia i przedmiot√≥w.");
+            Console.WriteLine("Oto kilka wa≈ºnych informacji:");
+            Console.WriteLine("1. Walczysz, aby zdobywaƒá do≈õwiadczenie i podnosiƒá poziom postaci.");
+            Console.WriteLine("2. W ekwipunku znajdziesz mikstury zdrowia i bro≈Ñ, kt√≥re pomogƒÖ Ci w walce.");
+            Console.WriteLine("3. Pamiƒôtaj, aby zarzƒÖdzaƒá ekwipunkiem i u≈ºywaƒá przedmiot√≥w w odpowiednich momentach.");
+            Console.WriteLine("4. Po wygranej walce mo≈ºesz zdobyƒá nagrody, takie jak nowe przedmioty.");
+            Console.WriteLine("\nPowodzenia w grze! Rozpocznij swojƒÖ przygodƒô!");
+            Console.WriteLine("\nNaci≈õnij dowolny klawisz, aby kontynuowaƒá...");
             Console.ReadKey();
         }
         public void ShowAuthMenu()
@@ -396,7 +396,7 @@ namespace Gra_RPG
 
         public void ShowMainMenu()
         {
-            Console.WriteLine("\n=== G?Ûwne Menu ===");
+            Console.WriteLine("\n=== G?√≥wne Menu ===");
             Console.WriteLine("1. Rozpocznij bitw?");
             Console.WriteLine("2. Zarz?dzaj ekwipunkiem");
             Console.WriteLine("3. Wyloguj si?");
@@ -408,7 +408,7 @@ namespace Gra_RPG
         {
             Console.WriteLine("\n=== Ekwipunek ===");
             player.DisplayInventory();
-            Console.WriteLine("\nWybierz przedmiot do u?ycia lub naci?nij '0' aby wrÛci?:");
+            Console.WriteLine("\nWybierz przedmiot do u?ycia lub naci?nij '0' aby wr√≥ci?:");
             string choice = Console.ReadLine()?.Trim();
 
             if (int.TryParse(choice, out int itemIndex) && itemIndex > 0 && itemIndex <= player.Inventory.Count)
@@ -417,11 +417,11 @@ namespace Gra_RPG
             }
             else if (choice == "0")
             {
-                return; // Wraca do g?Ûwnego menu
+                return; // Wraca do g?√≥wnego menu
             }
             else
             {
-                Console.WriteLine("\n>>> Nieprawid?owy wybÛr. <<<");
+                Console.WriteLine("\n>>> Nieprawid?owy wyb√≥r. <<<");
             }
         }
 
@@ -443,7 +443,7 @@ namespace Gra_RPG
                 "1" => "mag",
                 "2" => "?ucznik",
                 "3" => "wojownik",
-                _ => throw new ArgumentException("Nieprawid?owy wybÛr klasy postaci")
+                _ => throw new ArgumentException("Nieprawid?owy wyb√≥r klasy postaci")
             };
 
             Console.WriteLine($"\n>>> Utworzono posta?: {name}, Klasa: {charClass} <<<\n");
@@ -458,22 +458,22 @@ namespace Gra_RPG
 
         public void StartBattle(Character player, Enemy enemy)
         {
-            Console.WriteLine("\n=== RozpoczÍcie walki ===");
+            Console.WriteLine("\n=== Rozpoczƒôcie walki ===");
 
-            // Dodanie atakÛw do przeciwnika
+            // Dodanie atak√≥w do przeciwnika
             var attackList = new List<(string, int, int)>
     {
-        ("CiÍcie", 5, 15),
+        ("Ciƒôcie", 5, 15),
         ("Ugryzienie", 3, 10),
         ("Taran", 8, 20),
         ("Kula Ognia", 12, 18),
-        ("PodwÛjny cios", 10, 25),
+        ("Podw√≥jny cios", 10, 25),
         ("Zatrucie", 2, 5),
         ("Tornado", 15, 25)
     };
 
             enemy.SetAttacks(attackList);
-            enemy.ScaleStats();  // Skalowanie statystyk przeciwnika przed kaødπ walkπ
+            enemy.ScaleStats();  // Skalowanie statystyk przeciwnika przed ka≈ºdƒÖ walkƒÖ
 
             // Walka
             while (!player.IsDefeated() && !enemy.IsDefeated())
@@ -481,8 +481,8 @@ namespace Gra_RPG
                 Console.WriteLine($"\n{player.Name}: {player.HP}/{player.MaxHP} HP");
                 Console.WriteLine($"{enemy.Name}: {enemy.HP}/{enemy.MaxHP} HP");
                 Console.WriteLine("\n1. Atakuj");
-                Console.WriteLine("2. Uøyj przedmiotu");
-                Console.Write("Wybierz akcjÍ: ");
+                Console.WriteLine("2. U≈ºyj przedmiotu");
+                Console.Write("Wybierz akcjƒô: ");
 
                 string action = Console.ReadLine()?.Trim();
                 int damage;
@@ -492,42 +492,42 @@ namespace Gra_RPG
                     case "1":
                         int playerDamage = random.Next(player.AttackPower - 5, player.AttackPower + 5);
                         enemy.TakeDamage(playerDamage);
-                        Console.WriteLine($"\n>>> Zada≥eú {playerDamage} obraøeÒ przeciwnikowi! <<<");
+                        Console.WriteLine($"\n>>> Zada≈Çe≈õ {playerDamage} obra≈ºe≈Ñ przeciwnikowi! <<<");
                         break;
                     case "2":
                         player.DisplayInventory();
-                        Console.Write("Wybierz przedmiot do uøycia (numer): ");
+                        Console.Write("Wybierz przedmiot do u≈ºycia (numer): ");
                         if (int.TryParse(Console.ReadLine(), out int itemIndex))
                         {
-                            player.UseItem(itemIndex - 1); // Indeksowanie zaczyna siÍ od 1, wiÍc odejmujemy 1
+                            player.UseItem(itemIndex - 1); // Indeksowanie zaczyna siƒô od 1, wiƒôc odejmujemy 1
                         }
                         else
                         {
-                            Console.WriteLine("\n>>> Nieprawid≥owy wybÛr. <<<");
+                            Console.WriteLine("\n>>> Nieprawid≈Çowy wyb√≥r. <<<");
                         }
                         break;
                     default:
-                        Console.WriteLine("\n>>> Nieprawid≥owy wybÛr. <<<");
+                        Console.WriteLine("\n>>> Nieprawid≈Çowy wyb√≥r. <<<");
                         break;
                 }
 
                 if (!enemy.IsDefeated())
                 {
-                    // Losowanie ataku przeciwnika i obraøeÒ
+                    // Losowanie ataku przeciwnika i obra≈ºe≈Ñ
                     string enemyAttack = enemy.GetRandomAttack(out damage);
                     player.TakeDamage(damage);
-                    Console.WriteLine($"\n>>> {enemy.Name} uøy≥ ataku: {enemyAttack} i zada≥ {damage} obraøeÒ! <<<");
+                    Console.WriteLine($"\n>>> {enemy.Name} u≈ºy≈Ç ataku: {enemyAttack} i zada≈Ç {damage} obra≈ºe≈Ñ! <<<");
                 }
             }
 
             if (player.IsDefeated())
             {
-                Console.WriteLine("\n>>> Zosta≥eú pokonany. <<<");
+                Console.WriteLine("\n>>> Zosta≈Çe≈õ pokonany. <<<");
             }
             else
             {
-                Console.WriteLine("\n>>> Pokona≥eú przeciwnika! <<<");
-                player.GainExperience(50);  // Dodawanie doúwiadczenia po wygranej walce
+                Console.WriteLine("\n>>> Pokona≈Çe≈õ przeciwnika! <<<");
+                player.GainExperience(50);  // Dodawanie do≈õwiadczenia po wygranej walce
             }
         }
 
@@ -554,7 +554,7 @@ namespace Gra_RPG
         }
     }
 
-    // Klasa g?Ûwna gry
+    // Klasa g?√≥wna gry
     class Program
     {
         static void Main(string[] args)
@@ -586,14 +586,14 @@ namespace Gra_RPG
                                 loggedIn = true;
                                 Console.WriteLine($"\n>>> Zalogowano jako: {currentUser.Username} <<<\n");
                                 player = menu.CreateCharacter();
-                                menu.ShowTutorial();  // Wywo≥anie tutorialu po utworzeniu postaci
+                                menu.ShowTutorial();  // Wywo≈Çanie tutorialu po utworzeniu postaci
                             }
                             break;
                         case "3":
                             exit = true;
                             break;
                         default:
-                            Console.WriteLine("\n>>> Nieprawid≥owy wybÛr. <<<");
+                            Console.WriteLine("\n>>> Nieprawid≈Çowy wyb√≥r. <<<");
                             break;
                     }
                 }
@@ -605,19 +605,19 @@ namespace Gra_RPG
                     switch (choice)
                     {
                         case "1":
-                            // Tworzenie przeciwnikÛw z unikalnymi atakami
+                            // Tworzenie przeciwnik√≥w z unikalnymi atakami
                             var enemy1 = new Enemy("Goblin", 1, 50, 10);
                             var goblinAttacks = new List<(string, int, int)>
                         {
                             ("Sztylet", 5, 12),
-                            ("Skradzione øycie", 2, 6)
+                            ("Skradzione ≈ºycie", 2, 6)
                         };
                             enemy1.SetAttacks(goblinAttacks);
 
                             var enemy2 = new Enemy("Ork", 2, 70, 15);
                             var orkAttacks = new List<(string, int, int)>
                         {
-                            ("M≥ot", 8, 15),
+                            ("M≈Çot", 8, 15),
                             ("Rage", 10, 20)
                         };
                             enemy2.SetAttacks(orkAttacks);
@@ -626,14 +626,14 @@ namespace Gra_RPG
                             var smokAttacks = new List<(string, int, int)>
                         {
                             ("Ognisty podmuch", 20, 40),
-                            ("Skrzyd≥a", 10, 30)
+                            ("Skrzyd≈Ça", 10, 30)
                         };
                             enemy3.SetAttacks(smokAttacks);
 
                             var enemy4 = new Enemy("Wampir", 4, 80, 20);
                             var wampirAttacks = new List<(string, int, int)>
                         {
-                            ("Ukπszenie", 15, 25),
+                            ("UkƒÖszenie", 15, 25),
                             ("Czarny Mrok", 10, 20)
                         };
                             enemy4.SetAttacks(wampirAttacks);
@@ -641,7 +641,7 @@ namespace Gra_RPG
                             var enemy5 = new Enemy("Szkielet", 5, 90, 25);
                             var szkieletAttacks = new List<(string, int, int)>
                         {
-                                ("Strza≥ z ≥uku", 17, 27),
+                                ("Strza≈Ç z ≈Çuku", 17, 27),
                                 ("Cios mieczem", 12, 22)
                         };
                             enemy5.SetAttacks(szkieletAttacks);
@@ -650,7 +650,7 @@ namespace Gra_RPG
                             var zombieAttacks = new List<(string, int, int)>
                         {
                                 ("Uderzenie", 19, 29),
-                                ("Zaraøenie", 15, 25)
+                                ("Zara≈ºenie", 15, 25)
                         };
                             enemy6.SetAttacks(szkieletAttacks);
 
@@ -658,7 +658,7 @@ namespace Gra_RPG
                             var czarodziejAttacks = new List<(string, int, int)>
                         {
                                  ("Kula Ognia", 21, 31),
-                                   ("Zamroøenie", 17, 27)
+                                   ("Zamro≈ºenie", 17, 27)
                         };
                             enemy7.SetAttacks(czarodziejAttacks);
 
@@ -682,7 +682,7 @@ namespace Gra_RPG
 
 
 
-                            // WybÛr przeciwnika do walki
+                            // Wyb√≥r przeciwnika do walki
                             Console.WriteLine("Wybierz przeciwnika do walki:");
                             Console.WriteLine("1. Goblin");
                             Console.WriteLine("2. Ork");
@@ -693,7 +693,7 @@ namespace Gra_RPG
                             Console.WriteLine("7. Czarodziej");
                             Console.WriteLine("8. Minotaur");
                             Console.WriteLine("9. Demon");
-                            Console.Write("Wybierz opcjÍ: ");
+                            Console.Write("Wybierz opcjƒô: ");
                             string enemyChoice = Console.ReadLine()?.Trim();
                             Enemy selectedEnemy = null;
 
@@ -727,8 +727,8 @@ namespace Gra_RPG
                                     selectedEnemy = enemy9;
                                     break;
                                 default:
-                                    Console.WriteLine("\n>>> Nieprawid≥owy wybÛr. <<<");
-                                    continue; // PowrÛt do g≥Ûwnego menu
+                                    Console.WriteLine("\n>>> Nieprawid≈Çowy wyb√≥r. <<<");
+                                    continue; // Powr√≥t do g≈Ç√≥wnego menu
                             }
 
                             var game = new Game();
@@ -746,7 +746,7 @@ namespace Gra_RPG
                             exit = true;
                             break;
                         default:
-                            Console.WriteLine("\n>>> Nieprawid≥owy wybÛr. <<<");
+                            Console.WriteLine("\n>>> Nieprawid≈Çowy wyb√≥r. <<<");
                             break;
                     }
                 }
