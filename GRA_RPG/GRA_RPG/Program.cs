@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using MySqlConnector;
+using System.Linq;
 
 namespace Gra_RPG
 {
@@ -41,7 +43,10 @@ namespace Gra_RPG
     public class UserManager
     {
         private List<User> users;
-        private const string FilePath = "../../../users.txt";
+
+        //hasło użytkownika MariaDB.
+        private const string ConnectionString = 
+            "Server=localhost;Port=3305;Database=gra_rpg;User ID=root;Password=;";
 
         public UserManager()
         {
@@ -50,114 +55,195 @@ namespace Gra_RPG
 
         public void RegisterUser()
         {
-            Console.Write("\nPodaj nazw? u?ytkownika: ");
+            Console.Write("\nPodaj nazwę użytkownika: ");
             string username = Console.ReadLine()?.Trim();
 
             if (string.IsNullOrWhiteSpace(username))
             {
-                Console.WriteLine("\n>>> Nazwa u?ytkownika nie mo?e by? pusta! <<<\n");
+                Console.WriteLine("\n>>> Nazwa użytkownika nie może być pusta! <<<\n");
                 return;
             }
 
-            Console.Write("Podaj has?o: ");
+            Console.Write("Podaj hasło: ");
             string password = Console.ReadLine()?.Trim();
 
             if (string.IsNullOrWhiteSpace(password))
             {
-                Console.WriteLine("\n>>> Has?o nie mo?e by? puste! <<<\n");
+                Console.WriteLine("\n>>> Hasło nie może być puste! <<<\n");
                 return;
             }
 
-            if (users.Exists(u => u.Username == username))
+            try
             {
-                Console.WriteLine("\n>>> U?ytkownik o takiej nazwie ju? istnieje! <<<\n");
-                return;
-            }
+                using (var connection = new MySqlConnection(ConnectionString))
+                {
+                    connection.Open();
 
-            users.Add(new User(username, password));
-            Console.WriteLine("\n>>> Rejestracja zako?czona sukcesem! <<<\n");
+                    using (var command = new MySqlCommand(
+                        "INSERT INTO users (username, password, level, experience) VALUES (@username, @password, @level, @experience)",
+                        connection))
+                    {
+                        command.Parameters.AddWithValue("@username", username);
+                        command.Parameters.AddWithValue("@password", password);
+                        command.Parameters.AddWithValue("@level", 1);
+                        command.Parameters.AddWithValue("@experience", 0);
+                        command.ExecuteNonQuery();
+                    }
+                }
+
+                users.Add(new User(username, password));
+                Console.WriteLine("\n>>> Rejestracja zakończona sukcesem! <<<\n");
+            }
+            catch (MySqlException ex) when (ex.Number == 1062)
+            {
+                Console.WriteLine("\n>>> Użytkownik o takiej nazwie już istnieje! <<<\n");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n>>> Błąd rejestracji: {ex.Message} <<<\n");
+            }
         }
 
         public User LoginUser()
         {
-            Console.Write("\nPodaj nazw? u?ytkownika: ");
+            Console.Write("\nPodaj nazwę użytkownika: ");
             string username = Console.ReadLine()?.Trim();
-            Console.Write("Podaj has?o: ");
+            Console.Write("Podaj hasło: ");
             string password = Console.ReadLine()?.Trim();
 
-            User user = users.Find(u => u.Username == username);
-            if (user == null)
+            try
             {
-                Console.WriteLine("\n>>> Nie znaleziono u?ytkownika o podanej nazwie. <<<\n");
+                using (var connection = new MySqlConnection(ConnectionString))
+                {
+                    connection.Open();
+
+                    using (var command = new MySqlCommand(
+                        "SELECT username, password, level, experience FROM users WHERE username = @username LIMIT 1",
+                        connection))
+                    {
+                        command.Parameters.AddWithValue("@username", username);
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (!reader.Read())
+                            {
+                                Console.WriteLine("\n>>> Nie znaleziono użytkownika o podanej nazwie. <<<\n");
+                                return null;
+                            }
+
+                            string savedPassword = reader.GetString("password");
+
+                            if (savedPassword != password)
+                            {
+                                Console.WriteLine("\n>>> Nieprawidłowe hasło. <<<\n");
+                                return null;
+                            }
+
+                            User user = new User(
+                                reader.GetString("username"),
+                                savedPassword)
+                            {
+                                Progress = new UserProgress
+                                {
+                                    Level = reader.GetInt32("level"),
+                                    Experience = reader.GetInt32("experience")
+                                }
+                            };
+
+                            return user;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n>>> Błąd logowania: {ex.Message} <<<\n");
                 return null;
             }
-
-            if (user.Password != password)
-            {
-                Console.WriteLine("\n>>> Nieprawid?owe has?o. <<<\n");
-                return null;
-            }
-
-            return user;
         }
 
         public void SaveUsers()
         {
             try
             {
-                using (StreamWriter writer = new StreamWriter(FilePath))
+                using (var connection = new MySqlConnection(ConnectionString))
                 {
+                    connection.Open();
+
                     foreach (var user in users)
                     {
-                        writer.WriteLine($"{user.Username}|{user.Password}|{user.Progress.Level}|{user.Progress.Experience}");
+                        using (var command = new MySqlCommand(
+                            "UPDATE users SET level = @level, experience = @experience WHERE username = @username",
+                            connection))
+                        {
+                            command.Parameters.AddWithValue("@username", user.Username);
+                            command.Parameters.AddWithValue("@level", user.Progress.Level);
+                            command.Parameters.AddWithValue("@experience", user.Progress.Experience);
+                            command.ExecuteNonQuery();
+                        }
                     }
                 }
-                Console.WriteLine("\n>>> Dane u?ytkowników zapisano. <<<\n");
+
+                Console.WriteLine("\n>>> Dane użytkowników zapisano w MariaDB. <<<\n");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"\n>>> B??d zapisywania danych: {ex.Message} <<<\n");
+                Console.WriteLine($"\n>>> Błąd zapisywania danych: {ex.Message} <<<\n");
             }
         }
 
         public void LoadUsers()
         {
-            if (File.Exists(FilePath))
+            try
             {
-                try
+                using (var connection = new MySqlConnection(ConnectionString))
                 {
-                    using (StreamReader reader = new StreamReader(FilePath))
+                    connection.Open();
+
+                    // Tabela zostanie utworzona automatycznie przy pierwszym uruchomieniu.
+                    using (var createCommand = new MySqlCommand(
+                        @"CREATE TABLE IF NOT EXISTS users (
+                            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                            username VARCHAR(100) NOT NULL UNIQUE,
+                            password TEXT NOT NULL,
+                            level INT NOT NULL DEFAULT 1,
+                            experience INT NOT NULL DEFAULT 0
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+                        connection))
                     {
-                        string line;
-                        while ((line = reader.ReadLine()) != null)
+                        createCommand.ExecuteNonQuery();
+                    }
+
+                    users.Clear();
+
+                    using (var command = new MySqlCommand(
+                        "SELECT username, password, level, experience FROM users ORDER BY id",
+                        connection))
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
                         {
-                            string[] parts = line.Split('|');
-                            if (parts.Length == 4)
+                            var user = new User(
+                                reader.GetString("username"),
+                                reader.GetString("password"))
                             {
-                                string username = parts[0];
-                                string password = parts[1];
-                                int level = int.Parse(parts[2]);
-                                int experience = int.Parse(parts[3]);
-
-                                var user = new User(username, password)
+                                Progress = new UserProgress
                                 {
-                                    Progress = new UserProgress
-                                    {
-                                        Level = level,
-                                        Experience = experience
-                                    }
-                                };
+                                    Level = reader.GetInt32("level"),
+                                    Experience = reader.GetInt32("experience")
+                                }
+                            };
 
-                                users.Add(user);
-                            }
+                            users.Add(user);
                         }
                     }
-                    Console.WriteLine("\n>>> Dane u?ytkowników wczytano. <<<\n");
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"\n>>> B??d wczytywania danych: {ex.Message} <<<\n");
-                }
+
+                Console.WriteLine("\n>>> Dane użytkowników wczytano z MariaDB. <<<\n");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n>>> Błąd wczytywania danych z MariaDB: {ex.Message} <<<\n");
             }
         }
     }
